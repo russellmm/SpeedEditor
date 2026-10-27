@@ -6,7 +6,7 @@ Editor** into a configurable shortcut controller over USB.
 Edit all 43 buttons, configure three wheel modes, and see the battery percentage
 and charging status without enabling keyboard output.
 
-![SpeedEditor showing button assignments, wheel settings, and battery charging status](docs/images/speededitor.png)
+![SpeedEditor showing button assignments, wheel settings, and battery charging status](docs/images/speededitor-ee8ae1ec7864.png)
 
 *Current editor with Standard / Custom wheel controls, live monitoring, and
 automatic battery and charging status.*
