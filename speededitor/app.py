@@ -100,18 +100,28 @@ class App:
         ttk.Button(right, text='Apply & save', command=self.apply_button).pack(anchor='w', pady=8)
         ttk.Label(right, text='Examples: Ctrl+C, Alt+Tab, Super+E, Space,\nPlayPause, VolumeUp, ScrollDown.\nLeave blank to send nothing. Mode buttons also\nselect their wheel mode. Actions tap once per press.',
                   foreground='#555555').pack(anchor='w', pady=(0, 15))
-        ttk.Label(right, text='WHEEL — LEFT / RIGHT / THRESHOLD').pack(anchor='w')
+        ttk.Label(right, text='WHEEL — BEHAVIOR / LEFT / RIGHT / THRESHOLD').pack(anchor='w')
         self.wheel_vars = {}
+        self.wheel_behaviors = {}
+        self.wheel_entries = {}
         for mode in MODES:
             row = ttk.Frame(right)
             row.pack(fill='x', pady=5)
             ttk.Label(row, text=mode, width=5).pack(side='left')
+            behavior = tk.StringVar()
+            self.wheel_behaviors[mode] = behavior
+            picker = ttk.Combobox(row, textvariable=behavior, values=('Standard', 'Custom'), state='readonly', width=9)
+            picker.pack(side='left', padx=2)
+            picker.bind('<<ComboboxSelected>>', lambda _, selected_mode=mode: self.update_wheel_fields(selected_mode))
             variables = [tk.StringVar() for _ in range(3)]
             self.wheel_vars[mode] = variables
+            self.wheel_entries[mode] = []
             for index, variable in enumerate(variables):
-                ttk.Entry(row, textvariable=variable, width=6 if index == 2 else 11).pack(side='left', padx=2, fill='x', expand=index < 2)
+                entry = ttk.Entry(row, textvariable=variable, width=6 if index == 2 else 9)
+                entry.pack(side='left', padx=2, fill='x', expand=index < 2)
+                self.wheel_entries[mode].append(entry)
         ttk.Button(right, text='Save wheel settings', command=self.apply_wheel).pack(anchor='w', pady=5)
-        ttk.Label(right, text='Lower threshold = more sensitive.\nSHTL, JOG and SCRL select three relative-wheel maps.',
+        ttk.Label(right, text='Standard: JOG = frames; SCRL = 10× frames;\nSHTL = latched J/K/L playback levels.\nCustom enables the left/right shortcut fields.\nLower threshold = more sensitive. Focus a video editor.',
                   foreground='#555555').pack(anchor='w', pady=5)
         ttk.Separator(right).pack(fill='x', pady=12)
         ttk.Button(right, text='Use native Resolve', command=self.native_resolve).pack(anchor='w')
@@ -141,8 +151,15 @@ class App:
             self.table.selection_set(selection[0])
         for mode, variables in self.wheel_vars.items():
             settings = self.profile['wheel'][mode]
+            self.wheel_behaviors[mode].set(settings.get('behavior', 'custom').title())
             for variable, key in zip(variables, ('left', 'right', 'threshold')):
                 variable.set(str(settings[key]))
+            self.update_wheel_fields(mode)
+
+    def update_wheel_fields(self, mode):
+        standard = self.wheel_behaviors[mode].get() == 'Standard'
+        for entry in self.wheel_entries[mode][:2]:
+            entry.configure(state='disabled' if standard else 'normal')
 
     def select_button(self, _=None):
         selected = self.table.selection()
@@ -176,6 +193,7 @@ class App:
             for mode, variables in self.wheel_vars.items():
                 candidate['wheel'][mode] = dict(zip(('left', 'right', 'threshold'),
                                                    (variables[0].get().strip(), variables[1].get().strip(), int(variables[2].get()))))
+                candidate['wheel'][mode]['behavior'] = self.wheel_behaviors[mode].get().lower()
         except ValueError:
             messagebox.showerror('Invalid threshold', 'Wheel threshold must be a whole number.')
             return

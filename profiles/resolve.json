@@ -51,17 +51,20 @@
     "JOG": {
       "left": "Left",
       "right": "Right",
-      "threshold": 360
+      "threshold": 360,
+      "behavior": "standard"
     },
     "SCRL": {
-      "left": "Up",
-      "right": "Down",
-      "threshold": 3600
+      "left": "Left",
+      "right": "Right",
+      "threshold": 360,
+      "behavior": "standard"
     },
     "SHTL": {
       "left": "J",
       "right": "L",
-      "threshold": 3600
+      "threshold": 2160,
+      "behavior": "standard"
     }
   }
 }

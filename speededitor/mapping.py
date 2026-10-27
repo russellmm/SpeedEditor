@@ -56,6 +56,8 @@ def validate(profile):
         if not isinstance(profile['wheel'].get(mode), dict) or not all(key in profile['wheel'][mode] for key in ('threshold', 'left', 'right')):
             raise ValueError(f'Incomplete wheel map: {mode}')
         wheel = profile['wheel'][mode]
+        if wheel.get('behavior', 'custom') not in ('standard', 'custom'):
+            raise ValueError('Wheel behavior must be standard or custom')
         threshold = wheel['threshold']
         if isinstance(threshold, bool) or not isinstance(threshold, int) or not 1 <= threshold <= 8192:
             raise ValueError('Wheel threshold must be an integer between 1 and 8192')
@@ -125,6 +127,15 @@ class Mapper:
         self.held = set()
         self.mode = 'JOG'
         self.remainder = 0
+        self.shuttle_position = 0
+        self.shuttle_level = 0
+
+    def stop(self):
+        if self.shuttle_level:
+            self.emit('K')
+        self.shuttle_position = 0
+        self.shuttle_level = 0
+        self.remainder = 0
 
     def buttons(self, current):
         pressed = sorted(current - self.held)
@@ -132,27 +143,61 @@ class Mapper:
         events = []
         for key in pressed:
             name = KEYS.get(key, f'UNKNOWN_{key:04X}')
+            shuttle_was_playing = bool(self.shuttle_level)
             if name in MODES:
+                self.stop()
                 self.mode = name
-                self.remainder = 0
+            elif name == 'STOP_PLAY':
+                self.stop()
             action = self.profile['buttons'].get(name, '')
-            if action:
+            # The default transport button stops a latched shuttle. Do not
+            # immediately restart playback by toggling Space after stopping it.
+            stopped_shuttle = (name == 'STOP_PLAY' and shuttle_was_playing
+                               and action in ('Space', 'PlayPause'))
+            if action and not stopped_shuttle:
                 self.emit(action)
-            events.append((name, action))
+            events.append((name, 'K' if stopped_shuttle else action))
         return events
 
     def wheel(self, delta):
         settings = self.profile['wheel'][self.mode]
+        standard = settings.get('behavior', 'custom') == 'standard'
+        if standard and self.mode == 'SHTL':
+            return self.shuttle(delta, settings['threshold'])
         # Reverse direction immediately; discard residual motion from the other direction.
         if delta * self.remainder < 0:
             self.remainder = 0
         self.remainder += delta
         steps = math.trunc(self.remainder / settings['threshold'])
         self.remainder -= steps * settings['threshold']
-        action = settings['right' if steps > 0 else 'left']
+        action = ('Right' if steps > 0 else 'Left') if standard else settings['right' if steps > 0 else 'left']
         # Bound output for a single corrupt/large report; do not queue extra actions.
-        count = min(abs(steps), 20)
+        gain = 10 if standard and self.mode == 'SCRL' else 1
+        count = min(abs(steps) * gain, 80 if standard else 20)
+        if standard and count:
+            # Stop normal playback before stepping; no timer or queued repeat
+            # continues after physical wheel reports stop arriving.
+            self.emit('K')
         for _ in range(count):
             if action:
                 self.emit(action)
         return action, count
+
+    def shuttle(self, delta, threshold):
+        # Integrate relative motion into displacement from the SHTL entry point.
+        # Playback is latched: an idle wheel does not stop it. Returning to
+        # neutral, STOP/PLAY, a mode change or stopping the mapper does.
+        limit = 4 * threshold
+        self.shuttle_position = max(-limit, min(limit, self.shuttle_position + delta))
+        magnitude = min(4, abs(self.shuttle_position) // threshold)
+        level = magnitude * (1 if self.shuttle_position > 0 else -1)
+        if level == self.shuttle_level:
+            return 'Shuttle unchanged', 0
+        self.emit('K')
+        self.shuttle_level = level
+        if level:
+            action = 'L' if level > 0 else 'J'
+            for _ in range(abs(level)):
+                self.emit(action)
+            return f'Shuttle {"forward" if level > 0 else "reverse"} level {abs(level)}', abs(level)
+        return 'Shuttle stopped', 1

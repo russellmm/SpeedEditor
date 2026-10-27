@@ -35,7 +35,7 @@ class Worker:
         self.stop_event.set()
 
     def run(self, profile, active):
-        device = output = None
+        device = output = mapper = None
         try:
             if resolve_running():
                 raise RuntimeError('Resolve is running. Use “Use native Resolve” to let it own the controller.')
@@ -62,6 +62,7 @@ class Worker:
                         break
                     next_resolve_check = now + 1
                 if now >= next_auth:
+                    mapper.stop()
                     delay = device.authenticate()
                     device.relative_wheel(mapper.mode)
                     mapper.remainder = 0
@@ -72,6 +73,7 @@ class Worker:
                     except queue.Empty:
                         break
                     previous_held, previous_mode = mapper.held, mapper.mode
+                    mapper.stop()
                     mapper = Mapper(updated, output.emit if output else lambda action: None)
                     mapper.held, mapper.mode = previous_held, previous_mode
                 report = parse_report(device.read())
@@ -92,6 +94,11 @@ class Worker:
         except Exception as error:
             self.events.put(('error', f'{type(error).__name__}: {error}'))
         finally:
+            if mapper:
+                try:
+                    mapper.stop()
+                except OSError:
+                    pass
             if output:
                 try:
                     output.close()

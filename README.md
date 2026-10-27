@@ -8,6 +8,9 @@ and charging status without enabling keyboard output.
 
 ![SpeedEditor showing button assignments, wheel settings, and battery charging status](docs/images/speededitor.png)
 
+*The screenshot shows the earlier shortcut-only wheel editor. Current builds
+also include a Standard / Custom selector for each wheel mode.*
+
 ## Platform support
 
 | Platform | Status |
@@ -28,6 +31,8 @@ current Python app does not run on Windows as-is.
 - Assign a shortcut to any of the **43 physical buttons**.
 - Start with Desktop shortcuts for editing, navigation, browser tabs, and media.
 - Configure independent **JOG**, **SCRL**, and **SHTL** wheel maps.
+- Standard transport is the default: frame jog, faster timeline search, and
+  latched forward/reverse shuttle levels. Override any mode with Custom shortcuts.
 - Adjust wheel sensitivity separately for each mode.
 - Open and save JSON profiles, with validation and live updates.
 - Monitor button presses, wheel movement, and battery reports without sending shortcuts.
@@ -93,15 +98,38 @@ equals/plus key; use `Ctrl+Shift+Equal` to explicitly include Shift.
 Press the physical JOG, SCRL, or SHTL button to select a wheel map. Those buttons
 still select their modes when their shortcut assignments are blank.
 
-| Mode | Desktop: turn left / right | Default threshold |
+| Mode | Standard behavior | Default threshold |
 | --- | --- | --- |
-| JOG | Scroll up / down | 720 |
-| SCRL | Page up / down | 3600 |
-| SHTL | Volume down / up | 2160 |
+| JOG | Pause and step one frame back / forward per movement unit | 360 |
+| SCRL | Pause and step ten frames back / forward per movement unit | 360 |
+| SHTL | Set a latched reverse / forward playback level | 2160 |
 
-The threshold is wheel movement per output action: lower values are more
-sensitive. All three custom modes use relative motion and ordinary shortcuts.
-**They do not reproduce Resolve's native jog/shuttle/scroll behavior.**
+The threshold is wheel movement per step (or shuttle level): lower values are
+more sensitive. Both built-in profiles default to **Standard** transport.
+Select **Custom** for any mode to enable its left/right shortcut fields, then
+save the wheel settings. Older imported profiles without a behavior field keep
+their existing shortcut behavior.
+
+Standard transport targets a focused video editor with J/K/L and arrow-key
+playback controls. JOG and SCRL send K to pause, then step backward or forward;
+they do not keep generating actions when wheel reports stop. SCRL has a 10×
+gear ratio compared with JOG for the same threshold. Very large motion reports
+are bounded to avoid flooding the target application.
+
+SHTL integrates wheel movement from the point where shuttle mode was selected.
+Turning farther from that point selects one of four speed levels; it sends K
+followed by J or L taps only when the selected level changes. Playback continues
+when the wheel is stationary. Turn back to neutral, press STOP/PLAY, change
+modes, or stop the mapper to stop shuttle playback. Pressing SHTL again stops
+and recenters it. Speed multipliers depend on the target editor's key bindings;
+the app does not promise an exact 3× or 4× rate. STOP/PLAY defaults to Space.
+
+This is **keyboard transport emulation, not native Resolve integration**. The
+target editor must have focus and support these shortcuts. Generic desktop apps
+do not interpret the keys as video commands. Fairlight reel-rocking, automatic
+Cut-page waveform zoom, live trimming, and other context-aware dial operations
+still require native integration. App-level playback of these new defaults has
+not yet been verified.
 
 ### Battery status
 
@@ -131,8 +159,10 @@ The included **Resolve shortcuts** profile is an **unverified starter preset**.
 It is available to edit and export for future integration, but custom mapping is
 inactive while native Resolve runs. Some native operations have no direct
 keyboard equivalent and are blank. CAM1–9 send plain digits, not verified
-multicam commands. Its wheel maps send frame/navigation/playback keys, rather
-than native jog or shuttle commands.
+multicam commands. Its Standard wheel behavior uses the keyboard transport
+described above. Simultaneous custom buttons and native Resolve wheel behavior
+still need a separate routing/integration solution; changing transport defaults
+does not remove that limitation.
 
 ## Verification
 
@@ -146,7 +176,7 @@ Automatic battery reads were verified with mapping stopped, including a live
 separate reading. Virtual keyboard/scroll-device creation was also verified
 without sending test shortcuts.
 
-**25 automated tests** and the GUI smoke test pass. The editor is checked at
+**37 automated tests** and the GUI smoke test pass. The editor is checked at
 normal and high display scaling. The remaining 40 physical buttons, end-to-end
 shortcut delivery into target applications, and native Resolve behavior have
 not been verified on this setup. See [VERIFICATION.md](VERIFICATION.md).

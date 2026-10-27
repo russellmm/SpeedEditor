@@ -48,18 +48,29 @@ USB device `1edb:da0e`; 43 buttons. All assignments below are editable. Defaults
 | `0x39` | CAM7 | Ctrl+7 | 7 |
 | `0x3A` | CAM8 | Ctrl+8 | 8 |
 | `0x3B` | CAM9 | Ctrl+9 | 9 |
-| `0x3C` | STOP PLAY | PlayPause | Space |
+| `0x3C` | STOP PLAY | Space | Space |
 
 ## Wheel maps
 
-All three maps use relative motion. SHTL is a selectable map, not native absolute shuttle. Left/right orientation and sensitivity need confirmation using the physical wheel.
+Both built-in profiles now use **Standard** transport by default. Select
+**Custom** for an individual wheel mode to program its left/right actions.
+Imported profiles without a behavior field keep their assigned shortcuts.
 
-| Mode | Desktop left / right | Threshold | Resolve left / right | Threshold |
-| --- | --- | --- | --- | --- |
-| JOG | ScrollUp / ScrollDown | 720 | Left / Right | 360 |
-| SCRL | PageUp / PageDown | 3600 | Up / Down | 3600 |
-| SHTL | VolumeDown / VolumeUp | 2160 | J / L | 3600 |
+| Mode | Standard behavior in either profile | Threshold |
+| --- | --- | --- |
+| JOG | Pause, then step one frame backward / forward | 360 |
+| SCRL | Pause, then step ten frames backward / forward | 360 |
+| SHTL | Latched reverse / forward playback levels | 2160 |
 
-The Resolve profile uses keyboard approximations. CAM buttons currently send digits; verify their behavior in your installed Resolve keyboard preset. J/L wheel output taps playback commands; use STOP/PLAY to stop. See [README](README.md) for the native Resolve limitation and setup.
+JOG and SCRL emit K and arrow keys only in response to movement. SHTL uses
+relative displacement from its entry point to select four speed levels, sending
+K and J/L taps when the level changes. Returning to neutral, STOP/PLAY, a mode
+change, or stopping the mapper stops a latched shuttle. Actual speed multipliers
+depend on the focused editor. This emulation does not provide native Fairlight
+or Cut-page features, and has not been tested inside a video editor.
+
+The Resolve profile uses keyboard approximations. CAM buttons currently send
+digits; verify their behavior in your installed Resolve keyboard preset.
+See [README](README.md) for the native Resolve limitation and setup.
 
 Protocol reference: [Sylvain Munaut’s driver](https://github.com/smunaut/blackmagic-misc). Shortcut reference: [Blackmagic Design Editor’s Guide](https://documents.blackmagicdesign.com/UserManuals/DaVinci-Resolve-20-Editors-Guide.pdf).

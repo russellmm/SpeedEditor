@@ -99,6 +99,10 @@ class BatteryMonitorTests(unittest.TestCase):
 class MappingTests(unittest.TestCase):
     def setUp(self):
         self.profile = load_profile(ROOT / 'profiles/desktop.json')
+        for mode in ('JOG', 'SCRL', 'SHTL'):
+            self.profile['wheel'][mode]['behavior'] = 'custom'
+        self.profile['wheel']['JOG'].update(left='ScrollUp', right='ScrollDown', threshold=720)
+        self.profile['wheel']['SHTL'].update(left='VolumeDown', right='VolumeUp', threshold=2160)
         self.emitted = []
         self.mapper = Mapper(self.profile, self.emitted.append)
 
@@ -180,6 +184,102 @@ class MappingTests(unittest.TestCase):
                           (ecodes.EV_KEY, ecodes.KEY_C, 0), (ecodes.EV_KEY, ecodes.KEY_LEFTCTRL, 0)])
 
 
+class TransportTests(unittest.TestCase):
+    def setUp(self):
+        self.profile = load_profile(ROOT / 'profiles/desktop.json')
+        self.emitted = []
+        self.mapper = Mapper(self.profile, self.emitted.append)
+
+    def test_standard_is_default_for_both_builtin_profiles(self):
+        for name in ('desktop', 'resolve'):
+            profile = load_profile(ROOT / 'profiles' / f'{name}.json')
+            self.assertTrue(all(w['behavior'] == 'standard' for w in profile['wheel'].values()))
+
+    def test_jog_stops_playback_and_steps_frames_without_repeat(self):
+        self.mapper.wheel(360)
+        self.assertEqual(self.emitted, ['K', 'Right'])
+        self.mapper.wheel(0)
+        self.assertEqual(self.emitted, ['K', 'Right'])
+        self.mapper.wheel(-720)
+        self.assertEqual(self.emitted[-3:], ['K', 'Left', 'Left'])
+
+    def test_scroll_covers_ten_times_the_frames_per_same_rotation(self):
+        self.mapper.buttons({0x1e})
+        self.mapper.wheel(360)
+        self.assertEqual(self.emitted, ['K'] + ['Right'] * 10)
+        self.mapper.wheel(0)
+        self.assertEqual(len(self.emitted), 11)
+
+    def test_shuttle_latches_without_repeated_speed_up_for_stationary_wheel(self):
+        self.mapper.buttons({0x1c})
+        self.mapper.wheel(2160)
+        self.assertEqual(self.emitted, ['K', 'L'])
+        self.mapper.wheel(0)
+        self.mapper.wheel(100)
+        self.assertEqual(self.emitted, ['K', 'L'])
+        self.assertEqual(self.mapper.shuttle_level, 1)
+
+    def test_shuttle_can_increase_decrease_stop_and_reverse(self):
+        self.mapper.buttons({0x1c})
+        self.mapper.wheel(4320)
+        self.assertEqual(self.emitted, ['K', 'L', 'L'])
+        self.mapper.wheel(-2160)
+        self.assertEqual(self.emitted[-2:], ['K', 'L'])
+        self.mapper.wheel(-2160)
+        self.assertEqual(self.emitted[-1], 'K')
+        self.assertEqual(self.mapper.shuttle_level, 0)
+        self.mapper.wheel(-4320)
+        self.assertEqual(self.emitted[-3:], ['K', 'J', 'J'])
+
+    def test_shuttle_is_bounded_and_does_not_require_unwinding_excess_motion(self):
+        self.mapper.buttons({0x1c})
+        self.mapper.wheel(2**31 - 1)
+        self.assertEqual(self.emitted, ['K'] + ['L'] * 4)
+        self.mapper.wheel(-8640)
+        self.assertEqual(self.mapper.shuttle_level, 0)
+
+    def test_switching_modes_stops_latched_playback(self):
+        self.mapper.buttons({0x1c})
+        self.mapper.wheel(2160)
+        self.mapper.buttons({0x1d})
+        self.assertEqual(self.emitted[-1], 'K')
+        self.assertEqual(self.mapper.shuttle_level, 0)
+
+    def test_stop_play_stops_shuttle_without_restarting_playback(self):
+        self.mapper.buttons({0x1c})
+        self.mapper.wheel(2160)
+        self.mapper.buttons({0x3c})
+        self.assertEqual(self.emitted, ['K', 'L', 'K'])
+        self.mapper.buttons(set())
+        self.mapper.buttons({0x3c})
+        self.assertEqual(self.emitted[-1], 'Space')
+
+    def test_stopping_mapper_stops_shuttle_once(self):
+        self.mapper.buttons({0x1c})
+        self.mapper.wheel(2160)
+        self.mapper.stop()
+        self.mapper.stop()
+        self.assertEqual(self.emitted, ['K', 'L', 'K'])
+
+    def test_custom_override_and_legacy_profile_preserve_assigned_shortcuts(self):
+        for explicit in (True, False):
+            profile = copy.deepcopy(self.profile)
+            profile['wheel']['JOG'].update(left='VolumeDown', right='VolumeUp')
+            if explicit:
+                profile['wheel']['JOG']['behavior'] = 'custom'
+            else:
+                del profile['wheel']['JOG']['behavior']
+            emitted = []
+            mapper = Mapper(profile, emitted.append)
+            mapper.wheel(360)
+            self.assertEqual(emitted, ['VolumeUp'])
+
+    def test_invalid_behavior_rejected(self):
+        self.profile['wheel']['JOG']['behavior'] = 'unknown'
+        with self.assertRaises(ValueError):
+            validate(self.profile)
+
+
 class WorkerTests(unittest.TestCase):
     def setUp(self):
         self.profile = load_profile(ROOT / 'profiles/desktop.json')
@@ -220,6 +320,22 @@ class WorkerTests(unittest.TestCase):
         output.return_value.emit.assert_called_once_with('Ctrl+N')
         output.return_value.close.assert_called_once()
         device.return_value.close.assert_called_once()
+
+    @patch('speededitor.worker.resolve_running', return_value=False)
+    @patch('speededitor.worker.discover', return_value=[{'path': '/dev/fake', 'accessible': True}])
+    @patch('speededitor.worker.Device')
+    @patch('speededitor.worker.VirtualOutput')
+    def test_disconnect_stops_latched_shuttle_before_closing_output(self, output, device, discover, resolve):
+        device.return_value.authenticate.return_value = 570
+        device.return_value.read.side_effect = [
+            bytes([4]) + struct.pack('<6H', 0x1c, 0, 0, 0, 0, 0),
+            struct.pack('<BBiB', 3, 0, 2160, 255), OSError('unplugged')]
+        worker = Worker()
+        worker.run(self.profile, True)
+        self.assertEqual([call.args[0] for call in output.return_value.emit.call_args_list], ['K', 'L', 'K'])
+        calls = output.return_value.method_calls
+        self.assertEqual(calls[-2][0], 'emit')
+        self.assertEqual(calls[-1][0], 'close')
 
 
 if __name__ == '__main__':

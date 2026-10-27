@@ -33,8 +33,14 @@ with tempfile.TemporaryDirectory() as folder:
     app.wheel_vars['JOG'][0].set('Left')
     app.wheel_vars['JOG'][1].set('Right')
     app.wheel_vars['JOG'][2].set('64')
+    assert app.wheel_behaviors['JOG'].get() == 'Standard'
+    assert app.wheel_entries['JOG'][0].instate(['disabled'])
+    app.wheel_behaviors['JOG'].set('Custom')
+    app.update_wheel_fields('JOG')
+    assert app.wheel_entries['JOG'][0].instate(['!disabled'])
     app.apply_wheel()
     assert load_profile(app.path)['wheel']['JOG']['threshold'] == 64
+    assert load_profile(app.path)['wheel']['JOG']['behavior'] == 'custom'
 app.profile_name.set('Resolve shortcuts')
 app.switch_profile()
 assert app.profile['buttons']['STOP_PLAY'] == 'Space'

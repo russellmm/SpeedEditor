@@ -1,7 +1,7 @@
 {
   "version": 1,
   "name": "Desktop",
-  "notes": "Manual profile selection. Shortcuts go to the focused application.",
+  "notes": "Manual profile selection. Standard wheel transport uses J/K/L and arrow keys in the focused video editor. Custom overrides are available per wheel mode.",
   "buttons": {
     "SMART_INSRT": "Ctrl+N",
     "APPND": "Ctrl+Shift+N",
@@ -45,23 +45,26 @@
     "LIVE_OWR": "Ctrl+Z",
     "VIDEO_ONLY": "PreviousSong",
     "AUDIO_ONLY": "NextSong",
-    "STOP_PLAY": "PlayPause"
+    "STOP_PLAY": "Space"
   },
   "wheel": {
     "JOG": {
-      "left": "ScrollUp",
-      "right": "ScrollDown",
-      "threshold": 720
+      "left": "Left",
+      "right": "Right",
+      "threshold": 360,
+      "behavior": "standard"
     },
     "SCRL": {
-      "left": "PageUp",
-      "right": "PageDown",
-      "threshold": 3600
+      "left": "Left",
+      "right": "Right",
+      "threshold": 360,
+      "behavior": "standard"
     },
     "SHTL": {
-      "left": "VolumeDown",
-      "right": "VolumeUp",
-      "threshold": 2160
+      "left": "J",
+      "right": "L",
+      "threshold": 2160,
+      "behavior": "standard"
     }
   }
 }
