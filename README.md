@@ -8,8 +8,8 @@ and charging status without enabling keyboard output.
 
 ![SpeedEditor showing button assignments, wheel settings, and battery charging status](docs/images/speededitor.png)
 
-*The screenshot shows the earlier shortcut-only wheel editor. Current builds
-also include a Standard / Custom selector for each wheel mode.*
+*Current editor with Standard / Custom wheel controls, live monitoring, and
+automatic battery and charging status.*
 
 ## Platform support
 
