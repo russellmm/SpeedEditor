@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "name": "Desktop",
+  "notes": "Manual profile selection. Shortcuts go to the focused application.",
+  "buttons": {
+    "SMART_INSRT": "Ctrl+N",
+    "APPND": "Ctrl+Shift+N",
+    "RIPL_OWR": "Ctrl+S",
+    "CLOSE_UP": "Ctrl+Plus",
+    "PLACE_ON_TOP": "Alt+Tab",
+    "SRC_OWR": "Ctrl+O",
+    "IN": "Home",
+    "OUT": "End",
+    "TRIM_IN": "PageUp",
+    "TRIM_OUT": "PageDown",
+    "ROLL": "Tab",
+    "SLIP_SRC": "Shift+Tab",
+    "SLIP_DEST": "Ctrl+Tab",
+    "TRANS_DUR": "Ctrl+Shift+Tab",
+    "CUT": "Ctrl+X",
+    "DIS": "Ctrl+C",
+    "SMTH_CUT": "Ctrl+V",
+    "SOURCE": "Alt+Left",
+    "TIMELINE": "Alt+Right",
+    "SHTL": "",
+    "JOG": "",
+    "SCRL": "",
+    "ESC": "Esc",
+    "SYNC_BIN": "Ctrl+F",
+    "AUDIO_LEVEL": "Mute",
+    "FULL_VIEW": "F11",
+    "TRANS": "Ctrl+T",
+    "SPLIT": "Ctrl+Shift+T",
+    "SNAP": "Super+E",
+    "RIPL_DEL": "Delete",
+    "CAM1": "Ctrl+1",
+    "CAM2": "Ctrl+2",
+    "CAM3": "Ctrl+3",
+    "CAM4": "Ctrl+4",
+    "CAM5": "Ctrl+5",
+    "CAM6": "Ctrl+6",
+    "CAM7": "Ctrl+7",
+    "CAM8": "Ctrl+8",
+    "CAM9": "Ctrl+9",
+    "LIVE_OWR": "Ctrl+Z",
+    "VIDEO_ONLY": "PreviousSong",
+    "AUDIO_ONLY": "NextSong",
+    "STOP_PLAY": "PlayPause"
+  },
+  "wheel": {
+    "JOG": {
+      "left": "ScrollUp",
+      "right": "ScrollDown",
+      "threshold": 720
+    },
+    "SCRL": {
+      "left": "PageUp",
+      "right": "PageDown",
+      "threshold": 3600
+    },
+    "SHTL": {
+      "left": "VolumeDown",
+      "right": "VolumeUp",
+      "threshold": 2160
+    }
+  }
+}

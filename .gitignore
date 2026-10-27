@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+artifacts/
+.pytest_cache/
+
+# Local workspace instructions and machine-specific launcher.
+/AGENTS.md
+/SpeedEditor.desktop
+
+# Credentials and local logs must stay out of the repository.
+.secrets/
+.env
+.env.*
+*.log
