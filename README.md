@@ -169,8 +169,10 @@ You can mix Measured, Standard and Custom modes in one profile.
   nominal 1/2/4/8/16/32/64× rates. Fractional and odd rates round to a level;
   the target editor determines actual playback speed. The live log distinguishes
   measured targets from approximate output.
-- **Per-speed shortcuts:** configure direct speed commands supported by your
-  editor, with optional shortcut recording. An unassigned rate sends Stop.
+
+Continuous fractional-speed playback is required only in Resolve and remains
+handled by its native wheel integration. The desktop settings cover measured
+wheel response, steps per turn and Stop; no per-speed shortcut setup is needed.
 
 The curve uses nearest sampled positions; exact transition boundaries were not
 measured, and missing reverse rates are not copied from forward samples. It

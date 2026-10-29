@@ -261,7 +261,7 @@ class App:
         self.button_note.set('Native keeps Resolve’s action; Shortcut replaces it;\nDisabled suppresses it. JOG, SCRL and SHTL stay native.\nShortcuts run only while Resolve has focus.\nExamples: Ctrl+C, Space, Ctrl+Shift+S.\nPunctuation: Ctrl+, or Ctrl+Comma.' if native else
                              'Examples: Ctrl+C, Alt+Tab, Super+E, Space,\nPlayPause, VolumeUp, ScrollDown, Ctrl+,.\nLeave blank to send nothing. Actions tap once per press.')
         self.wheel_note.set('Native wheel: Resolve controls JOG, SCRL and SHTL.\nWheel shortcuts and thresholds are inactive here.\nThe measured speed curve is reference data;\nwheel input passes through to Resolve unchanged.' if native else
-                            'Standard: JOG = frames; SCRL = 10× frames;\nSHTL = latched J/K/L playback levels.\nCustom enables left/right shortcuts.\nMeasured (experimental) uses captured input scales:\nconfigure steps/turn and SHTL output below.\nKeyboard output remains an approximation.')
+                            'Standard: JOG = frames; SCRL = 10× frames;\nSHTL = latched J/K/L playback levels.\nCustom enables left/right shortcuts.\nMeasured (experimental) uses captured input scales:\nconfigure steps/turn and Stop below.\nFractional playback stays native to Resolve.')
 
     def change_connection_mode(self, _=None):
         if self.worker.running:

@@ -113,3 +113,11 @@ See [Resolve adapter setup and limits](docs/RESOLVE_ADAPTER.md).
   interrupted or switched to desktop mapping.
 
 See [measured transport setup and limits](docs/MEASURED_TRANSPORT.md).
+
+## Scope clarification
+
+Continuous fractional playback is required only in Resolve, through native wheel
+integration. The desktop settings were simplified to gains and Stop, retaining
+measured response and ordinary J/K/L output. The per-speed editor was removed;
+previously saved custom bindings remain compatible. The 83-test suites and
+normal/high-DPI GUI checks pass on Windows and WSL with the same platform skips.

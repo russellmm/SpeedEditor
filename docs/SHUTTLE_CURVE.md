@@ -100,8 +100,8 @@ levels and repeated-SHTL recenter behavior are implementation choices. The nativ
 observations above have not been applied as new default sensitivities. The optional
 [Measured desktop mode](MEASURED_TRANSPORT.md) now uses the retained samples
 with nearest-sample estimates, absolute hardware mode 3 and the observed neutral
-rules. Its application output is still keyboard commands, with an explicitly
-approximate J/K/L option or user-configured per-speed shortcuts. The
+rules. Its desktop output uses explicitly approximate J/K/L commands;
+continuous fractional-speed playback remains native to Resolve. The
 separate [experimental Resolve adapter](RESOLVE_ADAPTER.md) preserves native
 wheel behavior by passing the original reports to Resolve while routing only
 explicitly overridden buttons.

@@ -10,7 +10,6 @@ from types import SimpleNamespace
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from speededitor.app import App, configure_display, DESKTOP_MODE, RESOLVE_MODE
 from speededitor.mapping import ROOT, load_profile
-from speededitor.measured_editor import SHORTCUTS
 
 configure_display()
 root = tk.Tk()
@@ -97,17 +96,11 @@ with tempfile.TemporaryDirectory() as folder:
     with patch('speededitor.app.MeasuredTransportEditor.show'):
         editor = app.edit_measured_transport()
     assert editor is not None
-    assert editor.entry.instate(['disabled'])
-    editor.output.set(SHORTCUTS)
-    editor.table.selection_set('0.25')
-    editor.select()
-    assert editor.entry.instate(['!disabled'])
     with patch('speededitor.shortcut_capture.ShortcutRecorder.show'):
-        recorder = editor.record(editor.action)
-    recorder.key_press(SimpleNamespace(keysym='comma', state=4))
+        recorder = editor.record(editor.stop)
+    recorder.key_press(SimpleNamespace(keysym='k', state=4))
     recorder.use()
-    assert editor.action.get() == 'Ctrl+Comma'
-    assert editor.assign()
+    assert editor.stop.get() == 'Ctrl+K'
     editor.steps['JOG'].set('30')
     saved = app.path.read_bytes()
     if not headless:
@@ -118,7 +111,7 @@ with tempfile.TemporaryDirectory() as folder:
         assert editor.window.grab_current() == nested_recorder.window
         nested_recorder.key_press(SimpleNamespace(keysym='Escape', state=0))
         assert editor.window.grab_current() == editor.window
-        assert editor.table.column('speed', 'minwidth') > 90
+        root.update()  # Repaint the parent after the nested recorder is destroyed.
         from PIL import ImageGrab
         editor_name = 'measured-transport-high-dpi.png' if '--high-dpi' in sys.argv else 'measured-transport.png'
         ImageGrab.grab(bbox=(editor.window.winfo_rootx(), editor.window.winfo_rooty(),
@@ -130,7 +123,8 @@ with tempfile.TemporaryDirectory() as folder:
     updated = load_profile(app.path)
     assert all(w['behavior'] == 'measured' for w in updated['wheel'].values())
     assert updated['measured_transport']['steps_per_turn']['JOG'] == 30
-    assert updated['measured_transport']['shuttle_actions']['0.25'] == 'Ctrl+Comma'
+    assert updated['measured_transport']['stop'] == 'Ctrl+K'
+    assert updated['measured_transport']['output'] == 'approximate'
     with patch('speededitor.app.MeasuredTransportEditor.show'):
         editor = app.edit_measured_transport()
     editor.steps['JOG'].set('70')

@@ -132,7 +132,7 @@ class MeasuredTransportTests(unittest.TestCase):
         self.assertEqual(len(self.actions), count)
         self.assertNotIn('Space', self.actions)
 
-    def test_direct_speed_shortcuts_and_unassigned_rates_stop_playback(self):
+    def test_imported_custom_speed_bindings_remain_compatible(self):
         config = settings_for(self.profile)
         config.update(output='shortcuts', stop='Ctrl+K',
                       shuttle_actions={'0.25': 'Ctrl+,', '-0.25': 'Ctrl+Shift+,'})

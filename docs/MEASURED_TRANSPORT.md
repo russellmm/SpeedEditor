@@ -5,24 +5,25 @@ Cut / Source Tape observations to use. It estimates a target from wheel input
 and translates that target into application shortcuts. It is not native Resolve
 integration or a claim of exact Cut/Fairlight behavior.
 
+Continuous fractional-speed playback is needed only in Resolve, where its native
+wheel integration handles it. Desktop mode uses measured input response with
+ordinary keyboard transport; it does not add fractional playback to other programs.
+
 ## Set it up
 
 1. Select **Desktop shortcuts** and a personal profile. Resolve must be closed
    so the standalone mapper can own the USB controller.
 2. Choose **Measured** beside any wheel mode you want to change.
 3. Open **Measured transport settings…**. Set JOG/SCRL steps per turn, the
-   target editor's Stop shortcut, and your SHTL output choice.
-4. For **Per-speed shortcuts**, select a speed, enter or record the editor's
-   direct speed shortcut, and click **Assign**. These must be commands the
-   editor actually supports. Empty or `None` assignments send only Stop.
-5. Click **Save settings**. This saves both the dialog settings and the current
+   target editor's Stop shortcut. The Stop shortcut can be recorded.
+4. Click **Save settings**. This saves both the dialog settings and the current
    wheel behavior choices. Cancel discards staged dialog edits.
-6. Use **Monitor only** first. After reviewing input and targets, click Stop,
+5. Use **Monitor only** first. After reviewing input and targets, click Stop,
    focus your editor, and start mapping when ready.
 
 **Save wheel settings** also saves behavior choices. Measured modes ignore the
 ordinary threshold field. JOG/SCRL still use their left/right shortcut fields;
-SHTL instead uses the selected output policy. Standard remains the starter
+SHTL uses ordinary J/K/L keyboard transport. Standard remains the starter
 profile default, and legacy Custom profiles retain their original behavior.
 
 For Resolve while it is running, select **Resolve native wheel (experimental)**.
@@ -60,7 +61,7 @@ at 80 actions per report; excess steps in a burst are discarded rather than queu
 
 ## SHTL application output
 
-**Approximate J/K/L** is the initial output setting. It selects the nearest
+Desktop SHTL uses **approximate J/K/L** output. It selects the nearest
 nominal rate from 1, 2, 4, 8, 16, 32 and 64 using logarithmic distance, with ties
 favoring the lower rate. Stop is sent before J/L taps when that output level
 changes. An idle wheel or a target change within the same output level does not
@@ -72,11 +73,7 @@ typically a normal-speed keyboard command rather than quarter-speed playback.
 The log says `Measured target +0.25× → approximate J/K/L level 1 (nominal 1×)`.
 A **+3× target** selects nominal 4×. These are explicit keyboard approximations.
 
-**Per-speed shortcuts** sends Stop followed by one shortcut for that signed
-target. Configure direct rate-selection commands in the target editor. The app
-cannot create a playback rate the editor does not expose. Blank rates send Stop
-and log `unassigned; stopped`, rather than borrowing another rate's shortcut.
-Stop is configurable for both output policies and for measured JOG/SCRL stepping.
+Stop is configurable for measured SHTL and measured JOG/SCRL stepping.
 Each nonempty left/right step sends the configured stop shortcut before that
 report's step actions.
 
@@ -88,20 +85,16 @@ Resolve button overrides. For example:
 
 ```json
 "measured_transport": {
-  "output": "shortcuts",
+  "output": "approximate",
   "stop": "K",
-  "steps_per_turn": {"JOG": 60, "SCRL": 600},
-  "shuttle_actions": {
-    "0.25": "Ctrl+Alt+1",
-    "-0.25": "Ctrl+Alt+2"
-  }
+  "steps_per_turn": {"JOG": 60, "SCRL": 600}
 }
 ```
 
-The shortcut examples are placeholders for commands you assign in your editor.
-They are not verified Resolve defaults. Positive/negative speed strings must
-name a rate present in the sample ledger. The recorder captures a combination;
-it does not emit keys or create a timed macro.
+K is a conventional Stop shortcut; use the shortcut supported by your editor.
+The recorder captures a combination; it does not emit keys or create a timed macro.
+Previously saved custom speed bindings remain compatible and are preserved when
+saving gain settings, but the desktop GUI no longer offers per-speed setup.
 
 Automated tests cover the ledger samples, calibration, absolute versus relative
 input, retained neutral, stale reports, bounded output, stopping, profile
