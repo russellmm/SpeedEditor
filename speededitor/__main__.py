@@ -7,11 +7,13 @@ import queue
 import time
 
 from .device import discover, resolve_running
+from . import __version__
 from .mapping import ROOT, load_profile
 
 
 def main():
     parser = argparse.ArgumentParser(description='SpeedEditor USB key mapper')
+    parser.add_argument('--version', action='version', version=f'SpeedEditor {__version__}')
     parser.add_argument('command', choices=['gui', 'doctor', 'monitor', 'map', 'capture-native'], nargs='?', default='gui')
     parser.add_argument('--profile', type=Path, default=ROOT / 'profiles/desktop.json')
     parser.add_argument('--seconds', type=float, help='Stop monitor or map after this many seconds')
@@ -37,6 +39,7 @@ def main():
         gui_main()
         return 0
     if args.command == 'doctor':
+        print(f'SpeedEditor {__version__}')
         devices = discover()
         print('Speed Editor:', devices or 'not found')
         output_access = os.name == 'nt' or os.access('/dev/uinput', os.W_OK)

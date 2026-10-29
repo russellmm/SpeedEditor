@@ -121,3 +121,23 @@ integration. The desktop settings were simplified to gains and Stop, retaining
 measured response and ordinary J/K/L output. The per-speed editor was removed;
 previously saved custom bindings remain compatible. The 83-test suites and
 normal/high-DPI GUI checks pass on Windows and WSL with the same platform skips.
+
+# Version 0.1.0 and Windows monitor startup — October 29, 2026
+
+- Added the version beside the GUI name, in the window title, in `--version`,
+  and at the start of `doctor` output. This is the first numbered build.
+- Reproduced the user's error on the attached USB Speed Editor with Resolve
+  closed: wheel output report 3 wrote 7/7 bytes; LED report 4 had a 2-byte payload
+  but HIDAPI returned 7 after Windows padding. The previous equality check
+  incorrectly raised `Short USB output report` after that successful write.
+- Windows output now accepts a returned count at least as large as the payload;
+  shorter writes and HIDAPI exceptions still fail. Linux's write check is unchanged.
+- Live `monitor --seconds 3` then authenticated, configured Standard wheel mode
+  and LEDs, reported `Monitor connected — no shortcuts sent`, and stopped cleanly.
+  Mapping was never started, and no keyboard output device was created.
+- Windows suite: 85 tests, 84 passed and one Linux-specific test skipped.
+- WSL suite: 85 tests, 77 passed and eight Windows/Node-specific tests skipped.
+- Normal/high-DPI GUI checks pass on both platforms; Windows uses hidden windows,
+  while Xvfb rendering confirms that the version label fits. Hardware monitoring
+  of user-operated buttons/wheel and desktop shortcut delivery remain separate
+  live checks.

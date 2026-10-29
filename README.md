@@ -1,5 +1,9 @@
 # SpeedEditor
 
+Current version: **0.1.0**, displayed beside the app name and in the window title.
+You can also run `python -m speededitor --version`. Compare this number with the
+README on GitHub when checking which version you have open.
+
 Use the **Blackmagic Design DaVinci Resolve Speed Editor** as a configurable USB
 controller on **Windows 11**. Map buttons to keyboard shortcuts while **DaVinci
 Resolve continues to control the wheel natively**, or use the separate desktop
@@ -266,6 +270,9 @@ detects Resolve, allowing normal native Resolve operation without custom remaps.
 
 ## Troubleshooting
 
+- **`Short USB output report` on Monitor only:** reopen the app and check for
+  v0.1.0 or later beside its name. Earlier builds incorrectly rejected successful
+  padded Windows LED writes. Genuine short writes and device errors still fail.
 - **USB connected, interface busy/restricted:** Resolve can hold the interface
   exclusively. This is expected when using the Windows native-wheel adapter.
   Desktop mapping requires Resolve to be closed.

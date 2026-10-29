@@ -32,8 +32,23 @@ class WindowsHidTests(unittest.TestCase):
         self.handle.send_feature_report.return_value = 2
         with self.assertRaises(OSError):
             self.device.feature_set(bytes(10))
-        self.handle.write.return_value = 1
-        with self.assertRaises(OSError):
+        for written in (-1, 0, 1):
+            with self.subTest(written=written):
+                self.handle.write.return_value = written
+                with self.assertRaisesRegex(OSError, 'Short USB output report'):
+                    self.device.write(bytes([4, 1]))
+
+    def test_windows_padding_is_not_a_short_output_report(self):
+        # Real Speed Editor collection: both wheel and LED writes report 7
+        # bytes, even though the LED protocol payload contains only 2 bytes.
+        self.handle.write.return_value = 7
+        for payload in (bytes.fromhex('030000000000ff'), bytes([4, 1]), bytes([4, 0])):
+            self.device.write(payload)
+            self.handle.write.assert_called_with(payload)
+
+    def test_output_write_exceptions_are_preserved(self):
+        self.handle.write.side_effect = OSError('device disconnected')
+        with self.assertRaisesRegex(OSError, 'device disconnected'):
             self.device.write(bytes([4, 1]))
 
     def test_timed_reads_and_close_on_open_failure(self):

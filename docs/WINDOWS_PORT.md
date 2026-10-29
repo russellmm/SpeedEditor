@@ -35,10 +35,17 @@ installation and `requirements-dev.txt` for development dependencies.
 
 ## Remaining hardware checks
 
-Windows standalone HID authentication, automatic battery queries without
-Resolve, desktop mapping, and end-to-end SendInput delivery still need a live
-test with Resolve stopped. Native observation does not test the mapper's own
-authentication or output. The combined Resolve adapter is live-verified for
+On October 29, v0.1.0 authenticated the attached controller, configured Standard
+desktop wheel mode and LEDs, connected in Monitor only for three seconds, and
+stopped cleanly with Resolve closed. No keyboard output was created. This fixes
+an incorrect write-length check: the 2-byte LED command successfully returns a
+7-byte padded write count on Windows HIDAPI. Its
+[Windows implementation](https://github.com/libusb/hidapi/blob/hidapi-0.14.0/windows/hid.c#L929-L993)
+pads short output reports to the collection's maximum output size.
+
+Automatic battery queries without Resolve, live desktop button/wheel monitoring,
+measured mode-2/mode-3 operation, desktop mapping and end-to-end SendInput delivery
+still need further live checks. The combined Resolve adapter is live-verified for
 CAM9 → Space; other button/shortcut combinations and Resolve contexts need more
 testing. Desktop Standard wheel shortcuts remain keyboard approximations.
 

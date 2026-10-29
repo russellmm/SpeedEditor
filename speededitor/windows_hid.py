@@ -130,8 +130,12 @@ class WindowsDevice:
             raise OSError('Short USB feature report')
 
     def write(self, data):
-        if self.handle.write(data) != len(data):
-            raise OSError('Short USB output report')
+        # Windows HIDAPI pads smaller output reports to the collection's
+        # longest report and returns the padded count (e.g. 2-byte LEDs → 7).
+        # A count larger than the payload is therefore a successful write.
+        written = self.handle.write(data)
+        if written < len(data):
+            raise OSError(f'Short USB output report: {written}/{len(data)} payload bytes')
 
     def read(self, timeout=0.1):
         return bytes(self.handle.read(64, max(0, round(timeout * 1000))))

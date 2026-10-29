@@ -8,6 +8,7 @@ import tkinter as tk
 from tkinter import font as tkfont
 from tkinter import filedialog, messagebox, ttk
 
+from . import __version__
 from .device import discover
 from .battery import BatteryMonitor
 from .mapping import KEYS, MODES, ROOT, load_profile, parse_action, save_profile
@@ -31,7 +32,7 @@ def configure_display():
 class App:
     def __init__(self, root):
         self.root = root
-        root.title('SpeedEditor — Desktop & Resolve')
+        root.title(f'SpeedEditor v{__version__} — Desktop & Resolve')
         # Fit Windows displays with 125–200% scaling as well as Linux desktops.
         display_scale = max(1.0, float(root.tk.call('tk', 'scaling')) / (96 / 72))
         width = min(round(1120 * display_scale), max(800, root.winfo_screenwidth() - 80))
@@ -76,6 +77,8 @@ class App:
         title = ttk.Frame(outer)
         title.pack(fill='x')
         ttk.Label(title, text='SpeedEditor', style='Title.TLabel').pack(side='left')
+        self.version_label = ttk.Label(title, text=f'v{__version__}', foreground='#555555')
+        self.version_label.pack(side='left', padx=10, anchor='s', pady=(0, 4))
         ttk.Label(title, textvariable=self.battery).pack(side='right')
         self.device_text = ttk.Label(outer, text='Checking device…')
         self.device_text.configure(wraplength=self.initial_width - 40)

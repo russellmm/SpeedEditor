@@ -9,6 +9,7 @@ from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from speededitor.app import App, configure_display, DESKTOP_MODE, RESOLVE_MODE
+from speededitor import __version__
 from speededitor.mapping import ROOT, load_profile
 
 configure_display()
@@ -23,6 +24,8 @@ with patch('speededitor.app.BatteryMonitor') as monitor:
     app = App(root)
     monitor.return_value.start.assert_called_once()
 root.update()
+assert app.version_label.cget('text') == f'v{__version__}'
+assert f'v{__version__}' in root.title()
 root.after(250, root.quit)
 root.mainloop()
 assert len(app.table.get_children()) == 43
