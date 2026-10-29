@@ -70,6 +70,7 @@ class ShortcutRecorder:
         self.accept = accept
         self.held = set()
         self.action = None
+        self.previous_grab = parent.grab_current()
         self.window = tk.Toplevel(parent)
         self.window.withdraw()
         self.window.title('Record shortcut')
@@ -132,3 +133,5 @@ class ShortcutRecorder:
 
     def close(self):
         self.window.destroy()
+        if self.previous_grab is not None and self.previous_grab.winfo_exists():
+            self.previous_grab.grab_set()

@@ -19,8 +19,8 @@ to monitor the device or start mapping.
   Resolve's playback speeds, neutral position and page-specific wheel operations.
 - **Custom Resolve buttons:** set each of the other 40 buttons to **Native**,
   **Shortcut**, or **Disabled**. A shortcut replaces that button's native action.
-- **Desktop mode:** assign all 43 buttons and configure Standard or Custom wheel
-  actions for applications outside Resolve.
+- **Desktop mode:** assign all 43 buttons and configure Standard, Custom or
+  experimental Measured wheel actions for applications outside Resolve.
 - **Profiles:** edit and save JSON profiles, make copies, and retain older custom
   mappings. Desktop settings and Resolve button overrides are stored separately.
 - **Monitor only:** inspect controls without replacing their native actions or
@@ -146,13 +146,40 @@ Desktop wheel modes default to **Standard** keyboard transport:
 
 This requires a focused editor with compatible J/K/L and arrow-key bindings.
 It is **keyboard emulation**, not exact native Resolve, Cut or Fairlight control.
-The desktop shuttle has four playback levels; repeated SHTL stops and recenters
+The Standard desktop shuttle has four playback levels; repeated SHTL stops and recenters
 that emulation. Its behavior differs from the native wheel described above.
 
 Select **Custom** for an individual wheel mode to program left/right shortcuts.
-Lower thresholds increase sensitivity. Only explicitly selected Custom modes
-use those assignments. Older profiles without a behavior field retain their
-existing custom wheel behavior.
+Lower thresholds increase sensitivity. Older profiles without a behavior field
+retain their existing custom wheel behavior.
+
+### Optional measured desktop transport
+
+Select **Measured** for JOG, SCRL or SHTL, open **Measured transport settings…**,
+then **Save settings**. This is experimental and stays off in the starter profiles.
+You can mix Measured, Standard and Custom modes in one profile.
+
+- **JOG / SCRL:** use the measured mode-2 rotation scale with adjustable
+  **steps per turn**, sending the mode's left/right shortcuts. Defaults of 60
+  and 600 steps per turn are starting gains, not measured native frame counts.
+- **SHTL:** use absolute mode-3 positions and the captured forward/reverse speed
+  samples. Re-pressing SHTL stops while retaining neutral; switching through
+  JOG/SCRL and returning establishes a new neutral.
+- **Approximate J/K/L:** convert estimated target speeds to J/L tap levels with
+  nominal 1/2/4/8/16/32/64× rates. Fractional and odd rates round to a level;
+  the target editor determines actual playback speed. The live log distinguishes
+  measured targets from approximate output.
+- **Per-speed shortcuts:** configure direct speed commands supported by your
+  editor, with optional shortcut recording. An unassigned rate sends Stop.
+
+The curve uses nearest sampled positions; exact transition boundaries were not
+measured, and missing reverse rates are not copied from forward samples. It
+does **not** recreate exact native Resolve transport through keyboard commands.
+Resolve must remain closed for desktop USB ownership. While using Resolve,
+choose **Resolve native wheel** to retain its actual native behavior.
+
+Start with **Monitor only** to inspect targets without sending shortcuts. See
+[measured transport settings and limitations](docs/MEASURED_TRANSPORT.md).
 
 ## Profiles and shortcuts
 

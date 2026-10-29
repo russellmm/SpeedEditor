@@ -53,9 +53,9 @@ class Worker:
                                       'Device access is restricted. Run the device-access setup once.')
             device = Device(devices[0]['path'])
             delay = device.authenticate()
-            device.relative_wheel()
             output = VirtualOutput() if active else None
             mapper = Mapper(profile, output.emit if output else lambda action: None)
+            self.configure_wheel(device, mapper)
             next_auth = time.monotonic() + delay
             next_resolve_check = time.monotonic() + 1
             self.events.put(('status', 'Mapping active' if active else 'Monitor connected — no shortcuts sent'))
@@ -69,7 +69,7 @@ class Worker:
                 if now >= next_auth:
                     mapper.stop()
                     delay = device.authenticate()
-                    device.relative_wheel(mapper.mode)
+                    self.configure_wheel(device, mapper)
                     mapper.remainder = 0
                     next_auth = now + delay
                 while True:
@@ -81,7 +81,8 @@ class Worker:
                     mapper.stop()
                     mapper = Mapper(updated, output.emit if output else lambda action: None)
                     mapper.held, mapper.mode = previous_held, previous_mode
-                report = parse_report(device.read())
+                    self.configure_wheel(device, mapper)
+                report = parse_report(device.read(), wheel_mode=mapper.hardware_mode)
                 if report is None:
                     continue
                 kind, data = report
@@ -89,7 +90,7 @@ class Worker:
                     old_mode = mapper.mode
                     events = mapper.buttons(data)
                     if mapper.mode != old_mode:
-                        device.relative_wheel(mapper.mode)
+                        self.configure_wheel(device, mapper)
                     self.events.put(('keys', (data, events, mapper.mode)))
                 elif kind == 'wheel':
                     action, count = mapper.wheel(data)
@@ -115,3 +116,10 @@ class Worker:
                 except OSError:
                     pass
             self.events.put(('stopped', None))
+
+    @staticmethod
+    def configure_wheel(device, mapper):
+        if mapper.hardware_mode:
+            device.configure_wheel(mapper.mode, mapper.hardware_mode)
+        else:
+            device.relative_wheel(mapper.mode)

@@ -46,9 +46,11 @@ The user clarified the SCRL trial was intended as 360°, with a slight overshoot
 and reverse correction. Its positive and negative contributions were +1,521,118
 and −52,560. The JOG magnitudes differ by about 0.54%; these hand-rotated trials
 are approximate calibration, not precision angular metrology. Roughly 1.47
-million relative units per turn was observed in mode 2. The mapper currently
-programs mode 0; this capture does not prove an identical angular scale in mode 0.
-Existing sensitivity settings were preserved.
+million relative units per turn was observed in mode 2. Standard and Custom
+desktop modes still program mode 0; this capture does not prove an identical
+angular scale in mode 0. The optional [Measured desktop mode](MEASURED_TRANSPORT.md)
+programs mode 2 for JOG/SCRL and uses these approximate per-turn calibrations.
+Existing default sensitivity settings were preserved.
 
 ## Evidence and reproduction
 
@@ -76,5 +78,5 @@ Unmeasured: timeline/Source Tape frame displacement per revolution, exact speed
 thresholds, continuous shuttle response, Edit/Fairlight/other Cut contexts, mode-0 angular
 scale, and standalone Windows mapper output. The desktop keyboard wheel and
 the separate [Resolve native-wheel adapter](RESOLVE_ADAPTER.md) use different
-control paths. The desktop four-level keyboard shuttle does
+control paths. The Standard desktop four-level keyboard shuttle does
 not reproduce native 0.25× playback or context-sensitive Resolve operations.

@@ -12,6 +12,8 @@ from .device import discover
 from .battery import BatteryMonitor
 from .mapping import KEYS, MODES, ROOT, load_profile, parse_action, save_profile
 from .shortcut_capture import ShortcutRecorder
+from .measured_editor import MeasuredTransportEditor
+from .measured_transport import settings_for
 from .worker import Worker
 
 DESKTOP_MODE = 'Desktop shortcuts'
@@ -169,7 +171,7 @@ class App:
             ttk.Label(row, text=mode, width=5).pack(side='left')
             behavior = tk.StringVar()
             self.wheel_behaviors[mode] = behavior
-            picker = ttk.Combobox(row, textvariable=behavior, values=('Standard', 'Custom'), state='readonly', width=9)
+            picker = ttk.Combobox(row, textvariable=behavior, values=('Standard', 'Custom', 'Measured'), state='readonly', width=9)
             picker.pack(side='left', padx=2)
             self.wheel_pickers[mode] = picker
             picker.bind('<<ComboboxSelected>>', lambda _, selected_mode=mode: self.update_wheel_fields(selected_mode))
@@ -182,6 +184,8 @@ class App:
                 self.wheel_entries[mode].append(entry)
         self.wheel_save = ttk.Button(right, text='Save wheel settings', command=self.apply_wheel)
         self.wheel_save.pack(anchor='w', pady=5)
+        self.measured_setup = ttk.Button(right, text='Measured transport settings…', command=self.edit_measured_transport)
+        self.measured_setup.pack(anchor='w', pady=(0, 5))
         self.wheel_note = tk.StringVar()
         ttk.Label(right, textvariable=self.wheel_note, foreground='#555555').pack(anchor='w', pady=5)
         ttk.Separator(right).pack(fill='x', pady=12)
@@ -239,11 +243,13 @@ class App:
     def update_wheel_fields(self, mode):
         native = self.connection_mode.get() == RESOLVE_MODE
         standard = self.wheel_behaviors[mode].get() == 'Standard'
+        measured = self.wheel_behaviors[mode].get() == 'Measured'
         self.wheel_pickers[mode].configure(state='disabled' if native else 'readonly')
         for entry in self.wheel_entries[mode][:2]:
-            entry.configure(state='disabled' if native or standard else 'normal')
-        self.wheel_entries[mode][2].configure(state='disabled' if native else 'normal')
+            entry.configure(state='disabled' if native or standard or (measured and mode == 'SHTL') else 'normal')
+        self.wheel_entries[mode][2].configure(state='disabled' if native or measured else 'normal')
         self.wheel_save.configure(state='disabled' if native else 'normal')
+        self.measured_setup.configure(state='disabled' if native else 'normal')
 
     def update_mode_notes(self):
         native = self.connection_mode.get() == RESOLVE_MODE
@@ -255,7 +261,7 @@ class App:
         self.button_note.set('Native keeps Resolve’s action; Shortcut replaces it;\nDisabled suppresses it. JOG, SCRL and SHTL stay native.\nShortcuts run only while Resolve has focus.\nExamples: Ctrl+C, Space, Ctrl+Shift+S.\nPunctuation: Ctrl+, or Ctrl+Comma.' if native else
                              'Examples: Ctrl+C, Alt+Tab, Super+E, Space,\nPlayPause, VolumeUp, ScrollDown, Ctrl+,.\nLeave blank to send nothing. Actions tap once per press.')
         self.wheel_note.set('Native wheel: Resolve controls JOG, SCRL and SHTL.\nWheel shortcuts and thresholds are inactive here.\nThe measured speed curve is reference data;\nwheel input passes through to Resolve unchanged.' if native else
-                            'Standard: JOG = frames; SCRL = 10× frames;\nSHTL = latched J/K/L playback levels.\nCustom enables left/right shortcuts.\nLower threshold = more sensitive. Focus a video editor.')
+                            'Standard: JOG = frames; SCRL = 10× frames;\nSHTL = latched J/K/L playback levels.\nCustom enables left/right shortcuts.\nMeasured (experimental) uses captured input scales:\nconfigure steps/turn and SHTL output below.\nKeyboard output remains an approximation.')
 
     def change_connection_mode(self, _=None):
         if self.worker.running:
@@ -341,16 +347,36 @@ class App:
         if self.connection_mode.get() == RESOLVE_MODE:
             self.status.set('Resolve owns the native wheel; desktop wheel settings are inactive')
             return
-        candidate = json.loads(json.dumps(self.profile))
         try:
-            for mode, variables in self.wheel_vars.items():
-                candidate['wheel'][mode] = dict(zip(('left', 'right', 'threshold'),
-                                                   (variables[0].get().strip(), variables[1].get().strip(), int(variables[2].get()))))
-                candidate['wheel'][mode]['behavior'] = self.wheel_behaviors[mode].get().lower()
+            candidate = self.wheel_candidate()
         except ValueError:
             messagebox.showerror('Invalid threshold', 'Wheel threshold must be a whole number.')
             return
         self.persist(candidate)
+
+    def wheel_candidate(self):
+        candidate = json.loads(json.dumps(self.profile))
+        for mode, variables in self.wheel_vars.items():
+            candidate['wheel'][mode].update(left=variables[0].get().strip(), right=variables[1].get().strip(),
+                                            threshold=int(variables[2].get()),
+                                            behavior=self.wheel_behaviors[mode].get().lower())
+        return candidate
+
+    def edit_measured_transport(self):
+        if self.connection_mode.get() == RESOLVE_MODE:
+            return
+        editor = MeasuredTransportEditor(self.root, settings_for(self.profile), self.save_measured_transport)
+        editor.show()
+        return editor
+
+    def save_measured_transport(self, settings):
+        try:
+            candidate = self.wheel_candidate()
+        except ValueError:
+            messagebox.showerror('Invalid threshold', 'Wheel threshold must be a whole number.')
+            return False
+        candidate['measured_transport'] = settings
+        return self.persist(candidate)
 
     def switch_profile(self, _=None):
         self.load(self.profiles[self.profile_name.get()])
@@ -437,7 +463,9 @@ class App:
                     self.append_log(f'{name} → {action or "no shortcut"}  [{mode}]')
             elif kind == 'wheel':
                 delta, action, count, mode = data
-                if count:
+                if action.startswith('Measured target'):
+                    self.append_log(f'{mode} position {delta:+d}: {action}')
+                elif count:
                     self.append_log(f'{mode} wheel {delta:+d} → {action or "no shortcut"} ×{count}')
             elif kind == 'native_wheel':
                 _, _, mode = data

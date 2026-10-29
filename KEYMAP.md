@@ -66,6 +66,8 @@ Resolve** to detach all mapping. See [adapter setup](docs/RESOLVE_ADAPTER.md).
 Both built-in profiles now use **Standard** transport by default. Select
 **Custom** for an individual wheel mode to program its left/right actions.
 Imported profiles without a behavior field keep their assigned shortcuts.
+An experimental **Measured** option uses the captured input scales and SHTL
+samples, with separate output settings; see [measured transport](docs/MEASURED_TRANSPORT.md).
 
 | Mode | Standard behavior in either profile | Threshold |
 | --- | --- | --- |
@@ -73,7 +75,7 @@ Imported profiles without a behavior field keep their assigned shortcuts.
 | SCRL | Pause, then step ten frames backward / forward | 360 |
 | SHTL | Latched reverse / forward playback levels | 2160 |
 
-JOG and SCRL emit K and arrow keys only in response to movement. SHTL uses
+In Standard mode, JOG and SCRL emit K and arrow keys only in response to movement. SHTL uses
 relative displacement from its entry point to select four speed levels, sending
 K and J/L taps when the level changes. Returning to neutral, STOP/PLAY, a mode
 change, or stopping the mapper stops a latched shuttle. Actual speed multipliers

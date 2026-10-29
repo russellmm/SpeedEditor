@@ -10,6 +10,7 @@ from types import SimpleNamespace
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from speededitor.app import App, configure_display, DESKTOP_MODE, RESOLVE_MODE
 from speededitor.mapping import ROOT, load_profile
+from speededitor.measured_editor import SHORTCUTS
 
 configure_display()
 root = tk.Tk()
@@ -87,6 +88,54 @@ with tempfile.TemporaryDirectory() as folder:
     app.apply_wheel()
     assert load_profile(app.path)['wheel']['JOG']['threshold'] == 64
     assert load_profile(app.path)['wheel']['JOG']['behavior'] == 'custom'
+    for mode in ('JOG', 'SCRL', 'SHTL'):
+        app.wheel_behaviors[mode].set('Measured')
+        app.update_wheel_fields(mode)
+        assert app.wheel_entries[mode][2].instate(['disabled'])
+    assert app.wheel_entries['JOG'][0].instate(['!disabled'])
+    assert app.wheel_entries['SHTL'][0].instate(['disabled'])
+    with patch('speededitor.app.MeasuredTransportEditor.show'):
+        editor = app.edit_measured_transport()
+    assert editor is not None
+    assert editor.entry.instate(['disabled'])
+    editor.output.set(SHORTCUTS)
+    editor.table.selection_set('0.25')
+    editor.select()
+    assert editor.entry.instate(['!disabled'])
+    with patch('speededitor.shortcut_capture.ShortcutRecorder.show'):
+        recorder = editor.record(editor.action)
+    recorder.key_press(SimpleNamespace(keysym='comma', state=4))
+    recorder.use()
+    assert editor.action.get() == 'Ctrl+Comma'
+    assert editor.assign()
+    editor.steps['JOG'].set('30')
+    saved = app.path.read_bytes()
+    if not headless:
+        editor.show()
+        root.update()
+        nested_recorder = editor.record(editor.stop)
+        root.update()
+        assert editor.window.grab_current() == nested_recorder.window
+        nested_recorder.key_press(SimpleNamespace(keysym='Escape', state=0))
+        assert editor.window.grab_current() == editor.window
+        assert editor.table.column('speed', 'minwidth') > 90
+        from PIL import ImageGrab
+        editor_name = 'measured-transport-high-dpi.png' if '--high-dpi' in sys.argv else 'measured-transport.png'
+        ImageGrab.grab(bbox=(editor.window.winfo_rootx(), editor.window.winfo_rooty(),
+                            editor.window.winfo_rootx() + editor.window.winfo_width(),
+                            editor.window.winfo_rooty() + editor.window.winfo_height()),
+                       **({'xdisplay': ''} if os.name != 'nt' else {})).save(ROOT / 'artifacts' / editor_name)
+    assert app.path.read_bytes() == saved  # Dialog edits are staged until Save settings.
+    editor.commit()
+    updated = load_profile(app.path)
+    assert all(w['behavior'] == 'measured' for w in updated['wheel'].values())
+    assert updated['measured_transport']['steps_per_turn']['JOG'] == 30
+    assert updated['measured_transport']['shuttle_actions']['0.25'] == 'Ctrl+Comma'
+    with patch('speededitor.app.MeasuredTransportEditor.show'):
+        editor = app.edit_measured_transport()
+    editor.steps['JOG'].set('70')
+    editor.window.destroy()
+    assert load_profile(app.path)['measured_transport']['steps_per_turn']['JOG'] == 30
     desktop_button = app.profile['buttons']['CAM1']
     desktop_wheel = dict(app.profile['wheel']['JOG'])
     app.connection_mode.set(RESOLVE_MODE)
@@ -106,6 +155,8 @@ with tempfile.TemporaryDirectory() as folder:
     assert app.profile['buttons']['CAM1'] == desktop_button
     assert app.profile['wheel']['JOG'] == desktop_wheel
     assert app.wheel_entries['JOG'][2].instate(['disabled'])
+    assert app.measured_setup.instate(['disabled'])
+    assert app.edit_measured_transport() is None
     app.button_behavior.set('Disabled')
     app.apply_button()
     assert app.profile['resolve_buttons']['CAM1'] == ''
@@ -131,8 +182,10 @@ assert app.profile['buttons']['STOP_PLAY'] == 'Space'
 app.profile_name.set('Desktop')
 app.switch_profile()
 app.worker.events.put(('keys', ({1}, [('SMART_INSRT', 'Ctrl+N')], 'JOG')))
+app.worker.events.put(('wheel', (401, 'Measured target +0.5× → approximate J/K/L level 1 (nominal 1×)', 0, 'SHTL')))
 app.worker.events.put(('battery', {'level': 82, 'charging': True}))
 app.poll()
+assert 'Measured target +0.5×' in app.log.get('1.0', 'end')
 assert app.table.item('SMART_INSRT', 'tags') == ('held',)
 assert '82%' in app.battery.get()
 assert 'Charging' in app.battery.get()

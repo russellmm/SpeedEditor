@@ -88,3 +88,28 @@ See [Resolve adapter setup and limits](docs/RESOLVE_ADAPTER.md).
   punctuation aliases, shifted keys and platform modifier flags.
 - This change has not yet had a physical-keyboard recording or Ctrl+Comma
   delivery check in the user's live Resolve session.
+
+# Optional measured desktop transport — October 29, 2026
+
+- Added opt-in Measured behavior per wheel mode; Standard defaults and legacy
+  Custom profiles remain unchanged. Native Resolve's pass-through is unaffected.
+- JOG/SCRL select the captured relative hardware mode 2 and use the retained
+  rotation calibration with user-selected steps per turn. SHTL selects absolute
+  mode 3 and estimates signed rates from the portable ledger, including retained
+  neutral on repeated SHTL presses and recentering only on mode re-entry.
+- Sample selection uses median positions and nearest-sample boundaries. These
+  are estimates, not measured speed thresholds; missing reverse rates are not
+  mirrored. Per-speed shortcuts or explicitly approximate J/K/L output are available.
+- Windows suite: 83 tests, 82 passed and one Linux-only test skipped.
+- Ubuntu WSL suite: 83 tests, 75 passed and eight Windows/Node tests skipped.
+- Hidden Windows GUI behavior and normal/high-DPI Xvfb rendering checks passed.
+  The settings dialog, nested shortcut recorder, Assign/Save/Cancel, inactive
+  native-mode controls and target-versus-output log were exercised.
+- Tests use synthetic HID reports and mocked output, including all retained
+  speed samples, absolute position handling, mode transitions, stale-report
+  filtering, profile updates, bounded output and monitor-only operation.
+- Standalone mode-2/mode-3 hardware operation and target-editor playback still
+  need a live check with Resolve stopped. The current Resolve session was not
+  interrupted or switched to desktop mapping.
+
+See [measured transport setup and limits](docs/MEASURED_TRANSPORT.md).

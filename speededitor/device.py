@@ -77,7 +77,12 @@ class LinuxDevice:
             raise OSError('Short USB output report')
 
     def relative_wheel(self, mode='JOG'):
-        self.write(struct.pack('<BBIB', 3, 0, 0, 255))
+        self.configure_wheel(mode, 0)
+
+    def configure_wheel(self, mode, hardware_mode):
+        if mode not in ('JOG', 'SCRL', 'SHTL') or hardware_mode not in (0, 2, 3):
+            raise ValueError('Invalid wheel configuration')
+        self.write(struct.pack('<BBIB', 3, hardware_mode, 0, 255))
         self.write(bytes([4, {'JOG': 1, 'SHTL': 2, 'SCRL': 4}[mode]]))
 
     def battery_status(self):
@@ -105,7 +110,7 @@ class LinuxDevice:
             self.fd = None
 
 
-def parse_report(data):
+def parse_report(data, wheel_mode=None):
     if not data:
         return None
     # Windows HID input buffers use the collection's maximum report size.
@@ -116,6 +121,8 @@ def parse_report(data):
     if data[0] == 4 and len(data) == 13:
         return 'keys', {k for k in struct.unpack('<6H', data[1:]) if k}
     if data[0] == 3 and len(data) == 7:
+        if wheel_mode is not None and data[1] != wheel_mode:
+            return None
         return 'wheel', struct.unpack_from('<i', data, 2)[0]
     if data[0] == 7 and len(data) == 3 and data[1] in (0, 1) and data[2] <= 100:
         return 'battery', {'charging': bool(data[1]), 'level': data[2]}
