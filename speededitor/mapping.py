@@ -17,6 +17,13 @@ ALIASES = {'CTRL': 'LEFTCTRL', 'CONTROL': 'LEFTCTRL', 'SHIFT': 'LEFTSHIFT',
            'ESCAPE': 'ESC', 'RETURN': 'ENTER', 'PGUP': 'PAGEUP',
            'PGDN': 'PAGEDOWN', 'PLUS': 'EQUAL', 'VOLUMEUP': 'VOLUMEUP',
            'VOLUMEDOWN': 'VOLUMEDOWN', 'PLAYPAUSE': 'PLAYPAUSE'}
+ALIASES.update({',': 'COMMA', '.': 'DOT', '/': 'SLASH', ';': 'SEMICOLON',
+                "'": 'APOSTROPHE', '[': 'LEFTBRACE', ']': 'RIGHTBRACE',
+                '\\': 'BACKSLASH', '`': 'GRAVE', '-': 'MINUS', '=': 'EQUAL',
+                'PERIOD': 'DOT', 'EQUALS': 'EQUAL', 'QUOTE': 'APOSTROPHE',
+                'LEFTBRACKET': 'LEFTBRACE', 'RIGHTBRACKET': 'RIGHTBRACE',
+                'BACKTICK': 'GRAVE', 'WIN': 'LEFTMETA', 'WINDOWS': 'LEFTMETA',
+                'PRINTSCREEN': 'SYSRQ'})
 
 
 def parse_action(action):

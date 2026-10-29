@@ -190,6 +190,27 @@ class MappingTests(unittest.TestCase):
             self.assertEqual(path.read_text(), original)
             self.assertEqual(load_profile(path), self.profile)
 
+    def test_literal_punctuation_matches_existing_key_names(self):
+        for symbol, name in [(',', 'Comma'), ('.', 'Dot'), ('/', 'Slash'),
+                             (';', 'Semicolon'), ("'", 'Apostrophe'),
+                             ('[', 'LeftBrace'), (']', 'RightBrace'),
+                             ('\\', 'Backslash'), ('`', 'Grave'),
+                             ('-', 'Minus'), ('=', 'Equal')]:
+            with self.subTest(symbol=symbol):
+                self.assertEqual(parse_action(f' CTRL + {symbol} '), parse_action(f'Ctrl+{name}'))
+                self.assertEqual(parse_action(symbol), parse_action(name))
+        self.assertEqual(parse_action('Ctrl+Plus'), parse_action('Ctrl+Equal'))
+        self.assertEqual(parse_action('Ctrl+Period'), parse_action('Ctrl+Dot'))
+        self.assertEqual(parse_action('Win+PrintScreen'), parse_action('Super+SysRq'))
+
+    def test_literal_comma_round_trips_in_both_profile_modes(self):
+        self.profile['buttons']['CAM1'] = 'Ctrl+,'
+        self.profile['resolve_buttons'] = {'CAM1': 'Ctrl + ,'}
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'punctuation.json'
+            save_profile(path, self.profile)
+            self.assertEqual(load_profile(path), self.profile)
+
     def test_utf8_import_and_failed_serialization_preserve_original(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'profile.json'

@@ -71,3 +71,20 @@ See [native evidence and limitations](docs/NATIVE_WHEEL.md) and
   sampled speed curve is not used to emulate native transport in this mode.
 
 See [Resolve adapter setup and limits](docs/RESOLVE_ADAPTER.md).
+
+# Shortcut punctuation and recording — October 29, 2026
+
+- Literal `Ctrl+,` and `Ctrl + ,` now resolve to the same key codes as
+  `Ctrl+Comma`. Common unshifted punctuation and friendly key names are accepted;
+  existing `Plus` profiles retain their meaning.
+- Added a focused shortcut recorder with preview, Use shortcut and Cancel.
+  Recording edits the field; Apply & save remains necessary to update a profile.
+  Native / Disabled buttons and native wheel mode buttons cannot be recorded.
+- Windows suite: 69 tests, 68 passed and one Linux-specific test skipped.
+- Ubuntu WSL suite: 69 tests, 61 passed and eight Windows/Node tests skipped.
+- Normal/high-DPI GUI checks passed with hidden Windows windows and Xvfb on
+  Linux. Xvfb key events exercised the recorder binding with Ctrl+Comma; rendered
+  layouts were inspected. Tests cover acceptance, cancellation, profile saving,
+  punctuation aliases, shifted keys and platform modifier flags.
+- This change has not yet had a physical-keyboard recording or Ctrl+Comma
+  delivery check in the user's live Resolve session.

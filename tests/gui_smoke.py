@@ -5,6 +5,7 @@ import sys
 import tempfile
 import tkinter as tk
 from unittest.mock import patch
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from speededitor.app import App, configure_display, DESKTOP_MODE, RESOLVE_MODE
@@ -36,6 +37,45 @@ with tempfile.TemporaryDirectory() as folder:
     app.action.set('Ctrl+Shift+F1')
     app.apply_button()
     assert load_profile(app.path)['buttons']['CAM1'] == 'Ctrl+Shift+F1'
+    saved = app.path.read_bytes()
+    with patch('speededitor.app.ShortcutRecorder.show'):
+        recorder = app.record_shortcut()
+    assert recorder is not None
+    assert recorder.use_button.instate(['disabled'])
+    if not headless:
+        recorder.show()
+        root.update()
+        recorder.capture.focus_force()
+        recorder.capture.event_generate('<KeyPress>', keysym='Control_L')
+        root.update()
+        assert recorder.action is None
+        recorder.capture.event_generate('<KeyPress>', keysym='comma', state=4)
+        root.update()
+        from PIL import ImageGrab
+        ROOT.joinpath('artifacts').mkdir(exist_ok=True)
+        ImageGrab.grab(bbox=(recorder.window.winfo_rootx(), recorder.window.winfo_rooty(),
+                            recorder.window.winfo_rootx() + recorder.window.winfo_width(),
+                            recorder.window.winfo_rooty() + recorder.window.winfo_height()),
+                       **({'xdisplay': ''} if os.name != 'nt' else {})).save(ROOT / 'artifacts/shortcut-recorder.png')
+    else:
+        recorder.key_press(SimpleNamespace(keysym='Control_L', state=0))
+        assert recorder.action is None
+        recorder.key_press(SimpleNamespace(keysym='comma', state=4))
+    assert recorder.preview.get() == 'Ctrl+Comma'
+    assert app.path.read_bytes() == saved
+    recorder.use()
+    assert app.action.get() == 'Ctrl+Comma'
+    assert app.path.read_bytes() == saved  # Recording alone does not save or update mapping.
+    app.apply_button()
+    assert load_profile(app.path)['buttons']['CAM1'] == 'Ctrl+Comma'
+    app.action.set('Ctrl + ,')
+    app.apply_button()
+    assert load_profile(app.path)['buttons']['CAM1'] == 'Ctrl + ,'
+    with patch('speededitor.app.ShortcutRecorder.show'):
+        recorder = app.record_shortcut()
+    recorder.key_press(SimpleNamespace(keysym='s', state=5))
+    recorder.key_press(SimpleNamespace(keysym='Escape', state=0))
+    assert app.action.get() == 'Ctrl + ,'
     app.wheel_vars['JOG'][0].set('Left')
     app.wheel_vars['JOG'][1].set('Right')
     app.wheel_vars['JOG'][2].set('64')
@@ -55,8 +95,11 @@ with tempfile.TemporaryDirectory() as folder:
     app.select_button()
     assert app.button_behavior.get() == 'Native'
     assert app.action_entry.instate(['disabled'])
+    assert app.record_button.instate(['disabled'])
+    assert app.record_shortcut() is None
     app.button_behavior.set('Shortcut')
     app.update_button_fields()
+    assert app.record_button.instate(['!disabled'])
     app.action.set('Space')
     app.apply_button()
     assert load_profile(app.path)['resolve_buttons']['CAM1'] == 'Space'
@@ -73,6 +116,8 @@ with tempfile.TemporaryDirectory() as folder:
     app.select_button()
     assert app.button_behavior_picker.instate(['disabled'])
     assert app.action_entry.instate(['disabled'])
+    assert app.record_button.instate(['disabled'])
+    assert app.record_shortcut() is None
     with patch.object(app.worker, 'start') as start:
         app.start(False)
         start.assert_called_once_with(app.profile, False, native_resolve=True)

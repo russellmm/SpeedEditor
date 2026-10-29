@@ -169,10 +169,36 @@ Native-wheel overrides use the optional `resolve_buttons` field: omitted entries
 mean Native, a shortcut string means Shortcut, and an empty string means Disabled.
 They do not overwrite the profile's desktop button or wheel settings.
 
-Shortcuts assume a US-style keyboard layout. `Super` means the Windows key on
-Windows. `Plus` refers to the equals/plus key; include Shift explicitly when
-needed, for example `Ctrl+Shift+Equal`. Unsupported platform-specific key names
-are rejected without replacing the saved profile.
+Type a shortcut such as **`Ctrl+,`**, **`Ctrl + ,`** or **`Ctrl+Comma`**; all three
+mean the same thing. Or select a button, choose **Shortcut** when using native
+Resolve mode, and click **Record shortcut…**. Press your combination in the
+recording area, click **Use shortcut**, then **Apply & save**. Recording fills
+the field for review; it captures one combination, rather than a timed sequence.
+Esc cancels recording; type `Esc` manually if you want to assign Escape.
+
+Shortcuts assume a US-style keyboard layout. Supported Windows keys include
+letters, digits, F1–F24, navigation keys, numpad keys, media keys, and Ctrl, Alt,
+Shift and Super modifiers. `Super`, `Win` and `Windows` mean the Windows key.
+Common punctuation can be entered literally or by name:
+
+| Key | Name |
+| --- | --- |
+| `,` / `.` / `/` | `Comma` / `Dot` (or `Period`) / `Slash` |
+| `;` / `'` | `Semicolon` / `Apostrophe` |
+| `[` / `]` / `\` | `LeftBracket` / `RightBracket` / `Backslash` |
+| `-` / `=` | `Minus` / `Equal` |
+| Backtick | `Grave` (or `Backtick`) |
+
+The `+` character separates keys. For the shifted plus key, enter
+`Ctrl+Shift+Equal`, for example. The legacy name `Plus` still means the physical
+equals/plus key without adding Shift. Other shifted punctuation similarly uses
+Shift plus its base key; the recorder writes this explicitly.
+
+Unsupported key names are rejected without replacing the saved profile. Some
+system shortcuts may be intercepted by Windows or the desktop before the recorder
+receives them; enter those by name. In native Resolve mode, JOG, SCRL and SHTL
+are reserved for the native wheel, and recording is available only for buttons
+set to Shortcut.
 
 Hold-to-repeat, held modifiers, arbitrary shell commands and automatic
 application-based profile switching are not implemented. See
@@ -241,7 +267,7 @@ JOG/SCRL/SHTL. Other remaps and standalone Windows desktop delivery have not all
 been verified. Detailed results and limitations are in
 [VERIFICATION.md](VERIFICATION.md).
 
-The **61-test suite** passes on Windows and Ubuntu WSL with platform-specific
+The automated test suite passes on Windows and Ubuntu WSL with platform-specific
 skips. Windows GUI behavior checks run with hidden windows; Linux rendering
 checks use Xvfb at normal and high DPI. Node.js is optional for the JavaScript
 adapter tests; it is not needed to run the GUI.

@@ -11,6 +11,7 @@ from tkinter import filedialog, messagebox, ttk
 from .device import discover
 from .battery import BatteryMonitor
 from .mapping import KEYS, MODES, ROOT, load_profile, parse_action, save_profile
+from .shortcut_capture import ShortcutRecorder
 from .worker import Worker
 
 DESKTOP_MODE = 'Desktop shortcuts'
@@ -149,7 +150,12 @@ class App:
         self.action_entry = ttk.Entry(right, textvariable=self.action)
         self.action_entry.pack(fill='x')
         self.action_entry.bind('<Return>', lambda _: self.apply_button())
-        ttk.Button(right, text='Apply & save', command=self.apply_button).pack(anchor='w', pady=8)
+        button_actions = ttk.Frame(right)
+        button_actions.pack(fill='x', pady=8)
+        self.record_button = ttk.Button(button_actions, text='Record shortcut…', command=self.record_shortcut,
+                                        state='disabled')
+        self.record_button.pack(side='left', padx=(0, 8))
+        ttk.Button(button_actions, text='Apply & save', command=self.apply_button).pack(side='left')
         self.button_note = tk.StringVar()
         ttk.Label(right, textvariable=self.button_note, foreground='#555555').pack(anchor='w', pady=(0, 15))
         ttk.Label(right, text='WHEEL — BEHAVIOR / LEFT / RIGHT / THRESHOLD').pack(anchor='w')
@@ -246,8 +252,8 @@ class App:
                            'All buttons start Native. Start mapping attaches the runtime adapter; Stop restores native buttons.' if native else
                            'Desktop shortcuts use keyboard transport emulation. Resolve must be closed for desktop mapping.\n'
                            'Choose Resolve native wheel mode to program button overrides while Resolve is running.')
-        self.button_note.set('Native keeps Resolve’s action; Shortcut replaces it;\nDisabled suppresses it. JOG, SCRL and SHTL stay native.\nShortcuts run only while Resolve has focus.\nExamples: Ctrl+C, Space, Ctrl+Shift+S.' if native else
-                             'Examples: Ctrl+C, Alt+Tab, Super+E, Space,\nPlayPause, VolumeUp, ScrollDown.\nLeave blank to send nothing. Actions tap once per press.')
+        self.button_note.set('Native keeps Resolve’s action; Shortcut replaces it;\nDisabled suppresses it. JOG, SCRL and SHTL stay native.\nShortcuts run only while Resolve has focus.\nExamples: Ctrl+C, Space, Ctrl+Shift+S.\nPunctuation: Ctrl+, or Ctrl+Comma.' if native else
+                             'Examples: Ctrl+C, Alt+Tab, Super+E, Space,\nPlayPause, VolumeUp, ScrollDown, Ctrl+,.\nLeave blank to send nothing. Actions tap once per press.')
         self.wheel_note.set('Native wheel: Resolve controls JOG, SCRL and SHTL.\nWheel shortcuts and thresholds are inactive here.\nThe measured speed curve is reference data;\nwheel input passes through to Resolve unchanged.' if native else
                             'Standard: JOG = frames; SCRL = 10× frames;\nSHTL = latched J/K/L playback levels.\nCustom enables left/right shortcuts.\nLower threshold = more sensitive. Focus a video editor.')
 
@@ -266,7 +272,17 @@ class App:
         if reserved and native:
             self.button_behavior.set('Native')
         self.button_behavior_picker.configure(state='readonly' if native and not reserved else 'disabled')
-        self.action_entry.configure(state='disabled' if native and (reserved or self.button_behavior.get() != 'Shortcut') else 'normal')
+        editable = bool(selection) and not (native and (reserved or self.button_behavior.get() != 'Shortcut'))
+        self.action_entry.configure(state='normal' if editable else 'disabled')
+        self.record_button.configure(state='normal' if editable else 'disabled')
+
+    def record_shortcut(self):
+        self.update_button_fields()
+        if self.record_button.instate(['disabled']):
+            return
+        recorder = ShortcutRecorder(self.root, self.action.set)
+        recorder.show()
+        return recorder
 
     def select_button(self, _=None):
         selected = self.table.selection()
