@@ -1,8 +1,19 @@
 # SpeedEditor key map
 
-USB device `1edb:da0e`; 43 buttons. All assignments below are editable. Defaults are editable. STOP/PLAY, CAM1 and JOG were verified by live button captures; the other 40 buttons use the published protocol IDs.
+USB device `1edb:da0e`; 43 buttons. All assignments below are editable. STOP/PLAY,
+CAM1 and JOG were verified in Linux captures. Windows native capture additionally
+confirmed SHTL (`0x1c`), JOG (`0x1d`) and SCRL (`0x1e`) on October 28, 2026.
+The subsequent GUI adapter test confirmed CAM9 (`0x3b`) with its Space override
+while the wheel stayed native. The remaining 37 button IDs use the published
+protocol and have not been verified physically. See
+[native wheel observations](docs/NATIVE_WHEEL.md).
 
-**Resolve shortcut preset is unverified and inactive while native Resolve is running.** Choose “Use native Resolve” for normal Resolve operation. Native button labels describe native controls; ordinary shortcuts cannot reproduce every operation. Blank entries send nothing.
+**The legacy Resolve shortcut preset is an unverified desktop approximation.**
+Windows also offers the experimental **Resolve native wheel** profile: every
+button starts Native, with explicit Shortcut or Disabled overrides saved
+separately. JOG, SCRL and SHTL always stay native in that mode. The table below
+lists desktop/starter shortcuts, not native-wheel overrides. Choose **Use native
+Resolve** to detach all mapping. See [adapter setup](docs/RESOLVE_ADAPTER.md).
 
 | Hardware ID | Button label | Desktop shortcut | Resolve starter shortcut |
 | --- | --- | --- | --- |

@@ -1,0 +1,335 @@
+{
+  "date_local": "2026-10-28",
+  "timezone": "America/Los_Angeles",
+  "context": "Windows 11, USB Speed Editor, Resolve Cut page, Source Tape active",
+  "hardware_mode": 3,
+  "samples": [
+    {
+      "label": "initial neutral",
+      "user_report": "SHTL pressed, playback stopped",
+      "position": 0,
+      "position_report_t_ms": 22230,
+      "speed": 0,
+      "evidence_id": "ev_698df1ccfc8dfe3aad453f76180431734405008f7d8062f4e5d814f3a438c084",
+      "limitations": "Initial press report may have preceded the first traced read; successful host mode reset and zero-position input were observed.",
+      "displayed_speed": 0,
+      "direction": "stopped"
+    },
+    {
+      "label": "first forward plateau",
+      "user_report": "now playing at .25x",
+      "position": 305,
+      "position_report_t_ms": 75235,
+      "speed": 0.25,
+      "evidence_id": "ev_908a20f16e77fa3004038af2246ed1344b0821981e1f3350a1ca1e0fe9da85df",
+      "limitations": "Sampled settled position, not an exact speed transition threshold.",
+      "displayed_speed": 0.25,
+      "direction": "forward"
+    },
+    {
+      "label": "forward half-speed plateau",
+      "user_report": "now at .5x",
+      "position": 401,
+      "position_report_t_ms": 114338,
+      "speed": 0.5,
+      "evidence_id": "ev_4baba633d7320097d41c52e6b8a9632f8bbbe5129f29c2989088cb0e0a8c33d5",
+      "limitations": "Sampled latest settled position; approach included clockwise and counterclockwise motion. Not an exact transition threshold.",
+      "displayed_speed": 0.5,
+      "direction": "forward"
+    },
+    {
+      "label": "forward normal-speed plateau",
+      "user_report": "now at 1X",
+      "position": 1301,
+      "position_report_t_ms": 164375,
+      "speed": 1,
+      "evidence_id": "ev_39e8b9e12532d21d5f661289c92b6376a8769c78383d1b8ab3d34678ab2e17c3",
+      "limitations": "Sampled latest settled position, not an exact speed transition threshold.",
+      "displayed_speed": 1,
+      "direction": "forward"
+    },
+    {
+      "label": "forward normal-speed plateau after media repositioning",
+      "user_report": "back at 1X",
+      "position": 1268,
+      "position_report_t_ms": 343096,
+      "speed": 1,
+      "evidence_id": "ev_ae3aa714377049a2f062127047b9a5125eb66b832e8246b32011260a22b3bc28",
+      "limitations": "Second sampled 1x position, not an exact threshold. Earlier 1x sample was +1301; this sample is +1268.",
+      "displayed_speed": 1,
+      "direction": "forward"
+    },
+    {
+      "label": "forward double-speed plateau",
+      "user_report": "2X",
+      "position": 1429,
+      "position_report_t_ms": 388351,
+      "speed": 2,
+      "evidence_id": "ev_5156a5496c6b2784f32d592c9d19e8710ca2b420bfdc7bb79d11484300655b71",
+      "limitations": "Sampled latest position, not an exact transition threshold. Approach included clockwise and counterclockwise adjustments.",
+      "displayed_speed": 2,
+      "direction": "forward"
+    },
+    {
+      "label": "stable forward triple-speed plateau",
+      "user_report": "that is a stable 3X now",
+      "position": 1782,
+      "position_report_t_ms": 462156,
+      "speed": 3,
+      "evidence_id": "ev_8043fcdcacd4ae8c0f03da1aa0d6f0e256d0bb336dfa588bc082349f68faa769",
+      "limitations": "User-confirmed stable display paired with latest wheel position; sampled point, not an exact threshold.",
+      "displayed_speed": 3,
+      "direction": "forward"
+    },
+    {
+      "label": "forward quadruple-speed plateau",
+      "user_report": "4X",
+      "position": 2023,
+      "position_report_t_ms": 538082,
+      "speed": 4,
+      "evidence_id": "ev_59c0e90831b6a7570628106d960f02dff5087f3921c7822b522ee6b8ebf29312",
+      "limitations": "Sampled latest wheel position, not an exact transition threshold. Approach included clockwise and counterclockwise adjustments.",
+      "displayed_speed": 4,
+      "direction": "forward"
+    },
+    {
+      "label": "forward five-times-speed plateau",
+      "user_report": "5x",
+      "position": 2184,
+      "position_report_t_ms": 556561,
+      "speed": 5,
+      "evidence_id": "ev_7cdabd3d54eee33edef9cf1240b17fe0d0d72703f9455e2c75e200968768c54c",
+      "limitations": "User-reported speed paired with latest wheel position; sampled point, not an exact transition threshold.",
+      "displayed_speed": 5,
+      "direction": "forward"
+    },
+    {
+      "label": "forward six-times-speed plateau",
+      "user_report": "6x",
+      "position": 2313,
+      "position_report_t_ms": 584727,
+      "speed": 6,
+      "evidence_id": "ev_e8df46166fc8710525de2dcac3da0067edb0994f494a26a02237bdd0c317576d",
+      "limitations": "User-reported speed paired with latest wheel position; sampled point, not an exact transition threshold.",
+      "displayed_speed": 6,
+      "direction": "forward"
+    },
+    {
+      "label": "forward seven-times-speed plateau",
+      "user_report": "7x",
+      "position": 2457,
+      "position_report_t_ms": 608807,
+      "speed": 7,
+      "evidence_id": "ev_af91b8a4e0e09f31c8a58ebb62ffc25fd01b6f439f8efd7b907085e0d4844677",
+      "limitations": "User-reported speed paired with latest wheel position; sampled point, not an exact transition threshold.",
+      "displayed_speed": 7,
+      "direction": "forward"
+    },
+    {
+      "label": "repeat forward seven-times-speed plateau after media repositioning",
+      "user_report": "7x",
+      "position": 2473,
+      "position_report_t_ms": 732458,
+      "speed": 7,
+      "evidence_id": "ev_5d55f3e431bfd8e6dff4791670d649117d91c2e9484b0068744ce980972a6aa4",
+      "limitations": "Sampled latest wheel position, not a threshold. Earlier 7x sample was +2457. Approach included overshoot and reverse correction.",
+      "displayed_speed": 7,
+      "direction": "forward"
+    },
+    {
+      "label": "forward eight-times-speed plateau",
+      "user_report": "8x",
+      "position": 2586,
+      "position_report_t_ms": 760945,
+      "speed": 8,
+      "evidence_id": "ev_e4e1cf93d19eced2fc70568af31a47ff09c3d9b1b560d811c5bf0796269b2f2c",
+      "limitations": "User-reported speed paired with latest wheel position; sampled point, not an exact transition threshold.",
+      "displayed_speed": 8,
+      "direction": "forward"
+    },
+    {
+      "label": "forward nine-times-speed plateau",
+      "user_report": "9x",
+      "position": 2698,
+      "position_report_t_ms": 793175,
+      "speed": 9,
+      "evidence_id": "ev_82ccf97e910dcc545cb2a079155b0352fa5918afa8b14c20d556ec9f91105cb8",
+      "limitations": "User-reported speed paired with latest wheel position; sampled point, not an exact transition threshold.",
+      "displayed_speed": 9,
+      "direction": "forward"
+    },
+    {
+      "label": "forward ten-times-speed plateau",
+      "user_report": "10",
+      "position": 2762,
+      "position_report_t_ms": 814311,
+      "speed": 10,
+      "evidence_id": "ev_040a96aa1ff26ab1ccd67a1d7ee07d90e6fef1457e1188a7697eed299bdc7e41",
+      "limitations": "User-reported speed paired with latest wheel position; sampled point, not an exact transition threshold.",
+      "displayed_speed": 10,
+      "direction": "forward"
+    },
+    {
+      "label": "forward sixteen-times-speed brief hold",
+      "user_report": "done with 16x",
+      "position": 3084,
+      "position_report_t_ms": 992288,
+      "speed": 16,
+      "evidence_id": "ev_629c736ad792622e84d1ab1a3af29735690f044158e5c09c6bf3073acde07278",
+      "limitations": "User-reported speed paired with a distinct held position before return to neutral. Sampled plateau, not an exact speed transition threshold.",
+      "displayed_speed": 16,
+      "direction": "forward"
+    },
+    {
+      "label": "forward thirty-two-times-speed plateau",
+      "user_report": "at 32x now",
+      "position": 3549,
+      "position_report_t_ms": 1090132,
+      "speed": 32,
+      "evidence_id": "ev_1b31d8e947f8029171af46ad1b2a5adacc000a7fd0de723d44051f344e0f8401",
+      "limitations": "User reported current 32x rather than completion of a hold-and-return trial. Sampled latest position after approach adjustments; no neutral return yet at this snapshot.",
+      "displayed_speed": 32,
+      "direction": "forward"
+    },
+    {
+      "label": "forward sixty-four-times-speed brief hold",
+      "user_report": "done; we got to 64x",
+      "position": 4096,
+      "position_report_t_ms": 1168937,
+      "speed": 64,
+      "evidence_id": "ev_82e53a83fa4a34e8ed241716f43da68c8932bb93f0cdc8ea0c94cdb6cf2deb7f",
+      "limitations": "Distinct held position observed, with displayed 64x confirmed by user in follow-up. This is a sampled point, not an exact transition threshold.",
+      "displayed_speed": 64,
+      "direction": "forward"
+    },
+    {
+      "label": "reverse quarter-speed plateau",
+      "user_report": "-.25x; well it just says .25 x but its playing backwards",
+      "position": -337,
+      "position_report_t_ms": 1264117,
+      "speed": -0.25,
+      "evidence_id": "ev_1539952d02454f7854ba87f8d5ca1e4443769ce2f7d165b96b6fc2910187cd74",
+      "limitations": "Sampled latest held position following overshoot and correction. Negative speed encodes user-confirmed reverse direction; display is unsigned. Not an exact transition threshold.",
+      "displayed_speed": 0.25,
+      "direction": "reverse"
+    },
+    {
+      "label": "reverse quarter-speed plateau follow-up adjustment",
+      "user_report": "-.25x; well it just says .25 x but its playing backwards",
+      "position": -321,
+      "position_report_t_ms": 1294884,
+      "speed": -0.25,
+      "evidence_id": "ev_d1130dd21ee27615a2514bedf5abcaaefc17e07155dd258557d53e567d73012a",
+      "limitations": "Sampled latest held position following overshoot and correction. Negative speed encodes user-confirmed reverse direction; display is unsigned. Not an exact transition threshold.",
+      "displayed_speed": 0.25,
+      "direction": "reverse"
+    },
+    {
+      "label": "reverse half-speed plateau",
+      "user_report": ".5x",
+      "position": -562,
+      "position_report_t_ms": 1332938,
+      "speed": -0.5,
+      "evidence_id": "ev_90514f3ab39a6927ac266934b45d4c867b268a60c8ecac49ebe007c5ff3dec58",
+      "limitations": "User-reported magnitude in the ongoing reverse trial paired with latest wheel position. Sampled point, not an exact transition threshold.",
+      "displayed_speed": 0.5,
+      "direction": "reverse"
+    },
+    {
+      "label": "reverse normal-speed plateau",
+      "user_report": "1x",
+      "position": -1317,
+      "position_report_t_ms": 1374657,
+      "speed": -1,
+      "evidence_id": "ev_648e0dc8dea8b54d623b1ec1606b238f1a20d1cf6f895442437bb6cc03211931",
+      "limitations": "User-reported magnitude in ongoing reverse trial paired with latest held position after overshoot and correction. Sampled point, not an exact transition threshold.",
+      "displayed_speed": 1,
+      "direction": "reverse"
+    },
+    {
+      "label": "stable reverse quadruple-speed plateau",
+      "user_report": "4x; still at 4x",
+      "position": -2136,
+      "position_report_t_ms": 1414056,
+      "speed": -4,
+      "evidence_id": "ev_fe6818c51282ff2e0ab5166125911a0db7c5002502f6e5839f3f97a8bc0efb3f",
+      "limitations": "User explicitly confirmed continuing 4x reverse. Latest position was unchanged across two status reads. No return to neutral yet; sampled plateau, not exact threshold.",
+      "displayed_speed": 4,
+      "direction": "reverse"
+    },
+    {
+      "label": "reverse sixteen-times-speed brief hold",
+      "user_report": "done with 16x",
+      "position": -3100,
+      "position_report_t_ms": 1528404,
+      "speed": -16,
+      "evidence_id": "ev_e05eadf165108d809691d0d439dc712c76a8fd42f28b97566cdffea3844869a0",
+      "limitations": "Two distinct holds at -3084 and -3100 separated by a small adjustment; final held position used. Sampled plateau, not an exact transition threshold.",
+      "displayed_speed": 16,
+      "direction": "reverse"
+    },
+    {
+      "label": "reverse sixty-four-times-speed brief hold",
+      "user_report": "64x done",
+      "position": -4096,
+      "position_report_t_ms": 1599905,
+      "speed": -64,
+      "evidence_id": "ev_e903b96935917cecbd428b78b893d6008f9939dfc02a355c7645ebe83edd3fae",
+      "limitations": "User-confirmed reverse 64x paired with distinct held position before return to zero. Sampled endpoint, not an exact transition threshold.",
+      "displayed_speed": 64,
+      "direction": "reverse"
+    }
+  ],
+  "zero_test": {
+    "user_report": "yea, it seems like it is not a new zero position. hitting SHTL does stop it, but if I reverse the wheel from that 4x position it starts moving forward again at 3x, 2x, etc",
+    "evidence_id": "ev_0e09b1332933a98cd59cedf3066e9f8bcec56a87f9a9e12b5e1c76579b9ba1e4",
+    "shtl_press_samples": [
+      {
+        "press_t_ms": 84941,
+        "prior_position": 2056,
+        "next_position": 2039
+      },
+      {
+        "press_t_ms": 86725,
+        "prior_position": 2039,
+        "next_position": 2023
+      },
+      {
+        "press_t_ms": 88245,
+        "prior_position": 2023,
+        "next_position": 2007
+      },
+      {
+        "press_t_ms": 118756,
+        "prior_position": 2023,
+        "next_position": 2007
+      }
+    ],
+    "host_wheel_mode_reset_observed": false,
+    "final_neutral_position": 0,
+    "final_neutral_t_ms": 182385,
+    "messages_truncated": false,
+    "script_errors": []
+  },
+  "mode_entry_observation": {
+    "user_report": "if I hit SHTL to stop it, then select JOG or SCRL, then go back to SHTL, where I left the wheel is the new zero position",
+    "behavior": "Re-entering SHTL from JOG/SCRL establishes the current wheel position as the new neutral; re-pressing the already-selected SHTL stops playback while retaining the existing neutral.",
+    "evidence_type": "Direct user observation, consistent with earlier captured hardware mode-entry reset",
+    "supporting_mode_entry_evidence_id": "ev_698df1ccfc8dfe3aad453f76180431734405008f7d8062f4e5d814f3a438c084",
+    "supporting_mode_entry_report": "030300000000ff",
+    "supporting_zero_input_t_ms": 22230,
+    "limitations": "This newly described leave-and-return sequence was not recorded in a fresh trace. Earlier trace captured SHTL mode entry programming zero and a zero-position input."
+  },
+  "limitations": [
+    "Speed readings are human-reported and not synchronously sampled with HID timestamps.",
+    "Values are sampled plateau positions, not speed transition thresholds or a fitted response function.",
+    "The earlier +1718/3x point is excluded because the user subsequently reported 2x/3x fluctuation.",
+    "Reverse speed has an unsigned display magnitude; signed speed in this ledger encodes direction.",
+    "Forward 10x was estimated by the user to be 90 degrees from neutral; no angular calibration is inferred.",
+    "Unmeasured reverse rates are not filled in by symmetry."
+  ],
+  "source_sha256": {
+    "rea-shuttle-curve.json": "f3940bd4801a24386c35ac9763510deba7c5deaaf2748f9a4b91c30165155d1b",
+    "rea-shuttle-zero.json": "97aba55ce1776799840b157289d67e4a254b2a8752fdef8a1b6b3695f1c8b64d"
+  }
+}

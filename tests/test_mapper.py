@@ -1,5 +1,6 @@
 import copy
 import json
+import os
 import queue
 from pathlib import Path
 import struct
@@ -7,7 +8,9 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
-from evdev import ecodes
+if os.name != 'nt':
+    from evdev import ecodes
+from speededitor.output import key_code
 from speededitor.bmd_protocol import bmd_kbd_auth
 from speededitor.device import Device, parse_report
 from speededitor.mapping import KEYS, Mapper, ROOT, VirtualOutput, load_profile, parse_action, save_profile, validate
@@ -16,6 +19,13 @@ from speededitor.battery import BatteryMonitor
 
 
 class ProtocolTests(unittest.TestCase):
+    def test_windows_padding_does_not_hide_reports(self):
+        wheel = struct.pack('<BBiB', 3, 3, -240, 255)
+        self.assertEqual(parse_report(wheel + bytes(6)), ('wheel', -240))
+        self.assertEqual(parse_report(bytes([7, 1, 50]) + bytes(10)),
+                         ('battery', {'charging': True, 'level': 50}))
+        self.assertIsNone(parse_report(wheel + bytes([1])))
+
     def test_key_report_six_slots_and_unknown_code(self):
         self.assertEqual(parse_report(bytes([4]) + struct.pack('<6H', 1, 60, 0x99, 0, 0, 0)),
                          ('keys', {1, 60, 0x99}))
@@ -69,6 +79,11 @@ class ProtocolTests(unittest.TestCase):
 
 
 class BatteryMonitorTests(unittest.TestCase):
+    def setUp(self):
+        stop_resolve = patch('speededitor.battery.resolve_running', return_value=False)
+        stop_resolve.start()
+        self.addCleanup(stop_resolve.stop)
+
     @patch('speededitor.battery.discover', return_value=[{'path': '/dev/fake', 'accessible': True}])
     @patch('speededitor.battery.Device')
     def test_passive_query_does_not_authenticate_or_change_leds(self, device, discover):
@@ -159,7 +174,7 @@ class MappingTests(unittest.TestCase):
                 validate(value)
 
     def test_keyboard_chord_and_scroll_parsing(self):
-        self.assertEqual(parse_action('Ctrl+Shift+S'), ('keys', [ecodes.KEY_LEFTCTRL, ecodes.KEY_LEFTSHIFT, ecodes.KEY_S]))
+        self.assertEqual(parse_action('Ctrl+Shift+S'), ('keys', [key_code('KEY_LEFTCTRL'), key_code('KEY_LEFTSHIFT'), key_code('KEY_S')]))
         self.assertEqual(parse_action(''), ('none', []))
         self.assertEqual(parse_action('ScrollUp'), ('scroll', [1]))
 
@@ -175,6 +190,21 @@ class MappingTests(unittest.TestCase):
             self.assertEqual(path.read_text(), original)
             self.assertEqual(load_profile(path), self.profile)
 
+    def test_utf8_import_and_failed_serialization_preserve_original(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'profile.json'
+            profile = copy.deepcopy(self.profile)
+            profile['name'] = 'Édition 日本語'
+            path.write_text(json.dumps(profile, ensure_ascii=False), encoding='utf-8')
+            self.assertEqual(load_profile(path)['name'], profile['name'])
+            original = path.read_bytes()
+            profile['extra'] = object()
+            with self.assertRaises(TypeError):
+                save_profile(path, profile)
+            self.assertEqual(path.read_bytes(), original)
+            self.assertEqual(list(Path(folder).iterdir()), [path])
+
+    @unittest.skipIf(os.name == 'nt', 'Linux uinput backend')
     def test_keyboard_released_in_reverse_order(self):
         output = VirtualOutput.__new__(VirtualOutput)
         output.device = Mock()

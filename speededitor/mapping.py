@@ -6,7 +6,7 @@ from pathlib import Path
 import tempfile
 import os
 
-from evdev import UInput, ecodes
+from .output import VirtualOutput, key_code
 from .bmd_protocol import SpeedEditorKey
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -32,7 +32,7 @@ def parse_action(action):
     for part in parts:
         name = ALIASES.get(part, part)
         name = name if name.startswith('KEY_') else 'KEY_' + name
-        code = ecodes.ecodes.get(name)
+        code = key_code(name)
         if code is None:
             raise ValueError(f'Unknown key: {part or "(empty)"}. Example: Ctrl+Shift+S')
         if code in codes:
@@ -49,6 +49,11 @@ def validate(profile):
     if not isinstance(profile.get('buttons'), dict) or set(profile['buttons']) != set(KEYS.values()):
         raise ValueError('Profile must contain all 43 Speed Editor buttons')
     for action in profile['buttons'].values():
+        parse_action(action)
+    overrides = profile.get('resolve_buttons', {})
+    if not isinstance(overrides, dict) or any(name not in KEYS.values() or name in MODES for name in overrides):
+        raise ValueError('Resolve overrides must name known buttons; JOG, SCRL and SHTL stay native')
+    for action in overrides.values():
         parse_action(action)
     if not isinstance(profile.get('wheel'), dict):
         raise ValueError('Profile must contain three wheel maps')
@@ -67,7 +72,7 @@ def validate(profile):
 
 
 def load_profile(path):
-    return validate(json.loads(Path(path).read_text()))
+    return validate(json.loads(Path(path).read_text(encoding='utf-8')))
 
 
 def save_profile(path, profile):
@@ -75,49 +80,16 @@ def save_profile(path, profile):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     # Atomic replacement keeps the last good map intact if saving is interrupted.
-    with tempfile.NamedTemporaryFile(mode='w', dir=path.parent, delete=False) as tmp:
-        temporary = Path(tmp.name)
-        try:
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=path.parent, delete=False) as tmp:
+            temporary = Path(tmp.name)
             json.dump(profile, tmp, indent=2)
             tmp.write('\n')
-        except Exception:
-            temporary.unlink(missing_ok=True)
-            raise
-    try:
         os.replace(temporary, path)
     finally:
-        temporary.unlink(missing_ok=True)
-
-
-class VirtualOutput:
-    def __init__(self):
-        keyboard_codes = sorted({value for name, value in ecodes.ecodes.items()
-                                 if name.startswith('KEY_') and name not in
-                                 ('KEY_MAX', 'KEY_CNT', 'KEY_MIN_INTERESTING')})
-        self.device = UInput({ecodes.EV_KEY: keyboard_codes,
-                              ecodes.EV_REL: [ecodes.REL_WHEEL]},
-                             name='SpeedEditor Virtual Keyboard',
-                             vendor=0x1edb, product=0x0001)
-
-    def emit(self, action):
-        kind, codes = parse_action(action)
-        if kind == 'scroll':
-            self.device.write(ecodes.EV_REL, ecodes.REL_WHEEL, codes[0])
-            self.device.syn()
-        elif kind == 'keys':
-            pressed = []
-            try:
-                for code in codes:
-                    self.device.write(ecodes.EV_KEY, code, 1)
-                    pressed.append(code)
-                self.device.syn()
-            finally:
-                for code in reversed(pressed):
-                    self.device.write(ecodes.EV_KEY, code, 0)
-                self.device.syn()
-
-    def close(self):
-        self.device.close()
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 class Mapper:

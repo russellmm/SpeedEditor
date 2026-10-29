@@ -1,58 +1,189 @@
 # SpeedEditor
 
-A Linux desktop app that turns the **Blackmagic Design DaVinci Resolve Speed
-Editor** into a configurable shortcut controller over USB.
+Use the **Blackmagic Design DaVinci Resolve Speed Editor** as a configurable USB
+controller on **Windows 11**. Map buttons to keyboard shortcuts while **DaVinci
+Resolve continues to control the wheel natively**, or use the separate desktop
+mapper with other applications.
 
-Edit all 43 buttons, configure three wheel modes, and see the battery percentage
-and charging status without enabling keyboard output.
+The Windows Resolve adapter is **experimental**, with a successful live test on
+Resolve **21.1.0.14**: CAM9 was mapped to play/pause while JOG, SCRL and SHTL
+continued to work natively. It uses a temporary runtime adapter rather than an
+official Blackmagic plugin, and compatibility may change with Resolve updates.
 
-![SpeedEditor showing button assignments, wheel settings, and battery charging status](docs/images/speededitor-ee8ae1ec7864.png)
+The program starts **disconnected, with shortcut output off**. You choose when
+to monitor the device or start mapping.
 
-*Current editor with Standard / Custom wheel controls, live monitoring, and
-automatic battery and charging status.*
+## What it does
 
-## Platform support
+- **Resolve native wheel mode:** keep native JOG, SCRL and SHTL behavior, including
+  Resolve's playback speeds, neutral position and page-specific wheel operations.
+- **Custom Resolve buttons:** set each of the other 40 buttons to **Native**,
+  **Shortcut**, or **Disabled**. A shortcut replaces that button's native action.
+- **Desktop mode:** assign all 43 buttons and configure Standard or Custom wheel
+  actions for applications outside Resolve.
+- **Profiles:** edit and save JSON profiles, make copies, and retain older custom
+  mappings. Desktop settings and Resolve button overrides are stored separately.
+- **Monitor only:** inspect controls without replacing their native actions or
+  sending shortcuts.
+- **Battery status:** show percentage and charging state when the interface is
+  available. Windows battery queries pause while Resolve owns the controller.
 
-| Platform | Status |
-| --- | --- |
-| Linux | Implemented; tested with a USB-connected Speed Editor on a Wayland desktop |
-| Windows 11 | **Not supported by the current version** |
-| macOS | Not supported by the current version |
-| Bluetooth | Not implemented; connect the controller by USB |
+Connect the Speed Editor **by USB**. Bluetooth is not implemented in this app.
 
-Device discovery and USB access use Linux sysfs and hidraw. Keyboard and scroll
-output use Linux uinput through `evdev`. The output backend is designed for
-Wayland and X11; X11 desktop shortcut delivery has not been verified. A Windows
-version would need different device-access and keyboard-output backends. The
-current Python app does not run on Windows as-is.
+## Platform status
 
-## Features
+| Feature | Windows 11 | Linux |
+| --- | --- | --- |
+| GUI and profile editing | Implemented; tested | Retained; automated GUI checks pass under WSL/Xvfb |
+| Standalone USB desktop mapper | Implemented; end-to-end Windows desktop delivery still needs testing | Existing hidraw/uinput backend; previously tested with USB on Wayland |
+| Custom buttons together with Resolve's native wheel | **Experimental; live-tested** | **Not implemented** |
+| Fully native Resolve without custom overrides | Detach the adapter and let Resolve operate normally | Release the mapper and let Resolve operate normally |
 
-- Assign a shortcut to any of the **43 physical buttons**.
-- Start with Desktop shortcuts for editing, navigation, browser tabs, and media.
-- Configure independent **JOG**, **SCRL**, and **SHTL** wheel maps.
-- Standard transport is the default: frame jog, faster timeline search, and
-  latched forward/reverse shuttle levels. Override any mode with Custom shortcuts.
-- Adjust wheel sensitivity separately for each mode.
-- Open and save JSON profiles, with validation and live updates.
-- Monitor button presses, wheel movement, and battery reports without sending shortcuts.
-- Read the battery automatically every five seconds, including while mapping and
-  monitoring are stopped. The display explicitly shows **Charging** or **Not charging**.
-- Size assignment rows to the displayed font, keeping the list compact at high DPI.
-- Release the controller using **Use native Resolve**.
+**Windows 11 is the current platform for the combined native-wheel/custom-button
+feature.** The Linux desktop code has been preserved. A Linux version of the
+combined mode is a reasonable future port, but needs its own Resolve process/HID
+adapter, focus handling and live USB tests. Windows API hooks cannot be reused
+unchanged on Linux; passing the shared tests under WSL does not verify native
+Resolve integration on a Linux machine. macOS is not supported.
 
-See [KEYMAP.md](KEYMAP.md) for every hardware button ID and the starter assignments.
+## Windows installation
 
-## Install and run
+You need:
 
-### Requirements
+- Windows 11 and **Python 3.13**, including tkinter and the Python launcher.
+- Git to clone this repository, or an extracted download of the repository.
+- A USB-connected Speed Editor. Keep the normal Resolve/Blackmagic device setup;
+  this project does not require replacing its USB driver.
+- A running DaVinci Resolve instance for native-wheel button mapping.
 
-- Linux with Python 3.10 or newer, tkinter, and Python venv support.
-- A C compiler, Python development headers, and Linux input headers to build `evdev`.
-- systemd/udev and `setfacl` (usually provided by the `acl` package) for device-access setup.
-- A Speed Editor connected by USB, with USB ID `1edb:da0e`.
+In PowerShell:
 
-Install the prerequisites using your Linux distribution's package manager, then:
+```powershell
+git clone https://github.com/russellmm/SpeedEditor.git
+cd SpeedEditor
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
+.\SpeedEditor.cmd
+```
+
+Setup creates **`.venv-win`** and installs the Python dependencies, including
+HIDAPI and Frida. The execution-policy option applies only to that PowerShell
+process. It does not change your machine's permanent policy.
+
+After setup, double-click **SpeedEditor.cmd** to launch the GUI. No administrator
+session is normally needed. Setup defaults to Python 3.13; to select another
+installed version, pass `-PythonVersion 3.12` to `setup.ps1`.
+
+To update an existing checkout, stop the adapter, close SpeedEditor, run
+`git pull`, then run setup again before reopening the app. Your saved profile
+files should be backed up before updating if you edited the built-in examples.
+
+## Use custom buttons with the native Resolve wheel
+
+1. Connect the Speed Editor by USB and open Resolve.
+2. Open SpeedEditor and select the **Resolve native wheel** profile. This selects
+   **Resolve native wheel (experimental)** as the control mode.
+3. Select a button in **Button Assignments**.
+4. Choose its behavior:
+
+   | Behavior | Result |
+   | --- | --- |
+   | **Native** | Resolve receives the button normally. This is the default. |
+   | **Shortcut** | Replace the native button action with the keyboard/scroll shortcut you enter. |
+   | **Disabled** | Suppress the button without sending a shortcut. |
+
+5. Choose **Apply & save**. For a first check, assign **CAM9 → Space** for
+   play/pause, or use a shortcut you already know works in your Resolve layout.
+6. Choose **Start mapping**.
+7. Return focus to Resolve and move the wheel briefly to arm the input path.
+8. Use your mapped buttons while Resolve continues handling the wheel.
+
+**JOG, SCRL and SHTL always remain native** in this mode. Wheel shortcut and
+sensitivity fields are disabled because Resolve controls the wheel directly.
+The measured shuttle curve is reference data; the adapter does not approximate
+it using keyboard commands.
+
+Custom shortcuts apply only while Resolve has focus. They tap once per button
+press. Actions such as `Space`, `Ctrl+C`, `Ctrl+Shift+S`, `Alt+Left`, and
+`ScrollDown` depend on the target application's shortcut layout.
+
+Choose **Monitor only** to connect without enabling overrides. Choose **Stop
+adapter** or **Use native Resolve** to detach and restore fully native buttons.
+Those controls stop the adapter; playback itself is controlled by Resolve.
+
+### What stays native
+
+Resolve retains device ownership, authentication, wheel modes, LEDs, playback
+speed response and the wheel's context within the current Resolve page.
+
+On the tested **Cut page with Source Tape active**, pressing SHTL while it is
+already selected stops playback and retains the existing neutral. Switching to
+JOG/SCRL and returning to SHTL establishes a new neutral at the current wheel
+position. Sampled native shuttle rates reached **0.25× through 64× in both
+directions**. These observations are specific to the tested context, and the
+samples are not exact speed-transition thresholds.
+
+See the [adapter details](docs/RESOLVE_ADAPTER.md),
+[native wheel observations](docs/NATIVE_WHEEL.md), and
+[sampled SHTL curve](docs/SHUTTLE_CURVE.md).
+
+## Use it as a desktop shortcut controller
+
+Close Resolve and select **Desktop shortcuts** as the control mode. Choose the
+**Desktop** profile, select a button, enter a shortcut, then choose **Apply &
+save**. Leave its assignment blank to send nothing.
+
+Use **Monitor only** first to inspect the controls. Choose **Start mapping** to
+send shortcuts to the focused application, and **Stop** to release the device.
+The standalone mapper refuses to take the controller while Resolve is running.
+
+Desktop wheel modes default to **Standard** keyboard transport:
+
+| Mode | Standard keyboard behavior | Default threshold |
+| --- | --- | --- |
+| JOG | Pause, then step one frame backward/forward per movement unit | 360 |
+| SCRL | Pause, then step ten frames backward/forward per movement unit | 360 |
+| SHTL | Latched reverse/forward J/K/L playback levels | 2160 |
+
+This requires a focused editor with compatible J/K/L and arrow-key bindings.
+It is **keyboard emulation**, not exact native Resolve, Cut or Fairlight control.
+The desktop shuttle has four playback levels; repeated SHTL stops and recenters
+that emulation. Its behavior differs from the native wheel described above.
+
+Select **Custom** for an individual wheel mode to program left/right shortcuts.
+Lower thresholds increase sensitivity. Only explicitly selected Custom modes
+use those assignments. Older profiles without a behavior field retain their
+existing custom wheel behavior.
+
+## Profiles and shortcuts
+
+- **Desktop:** general editing, navigation, browser and media shortcuts.
+- **Resolve shortcuts:** a legacy, unverified desktop keyboard preset. CAM1–9
+  use plain digits; they are not verified multicam commands.
+- **Resolve native wheel:** the Windows adapter profile. Every button starts
+  Native; add only the overrides you want.
+
+Use **Save as…** to create a personal copy and **Open…** to load it later.
+Native-wheel overrides use the optional `resolve_buttons` field: omitted entries
+mean Native, a shortcut string means Shortcut, and an empty string means Disabled.
+They do not overwrite the profile's desktop button or wheel settings.
+
+Shortcuts assume a US-style keyboard layout. `Super` means the Windows key on
+Windows. `Plus` refers to the equals/plus key; include Shift explicitly when
+needed, for example `Ctrl+Shift+Equal`. Unsupported platform-specific key names
+are rejected without replacing the saved profile.
+
+Hold-to-repeat, held modifiers, arbitrary shell commands and automatic
+application-based profile switching are not implemented. See
+[KEYMAP.md](KEYMAP.md) for the physical button IDs and starter shortcuts.
+
+## Linux desktop setup and future Resolve support
+
+The original Linux desktop backend is still included. It uses **hidraw/sysfs**
+for the controller and **evdev/uinput** for keyboard/scroll output.
+
+Requirements: Python 3.10+, tkinter, venv support, a C compiler and Python/Linux
+input development headers for evdev, plus systemd/udev and `setfacl` for device
+access. Install them with your distribution's package manager, then:
 
 ```sh
 git clone https://github.com/russellmm/SpeedEditor.git
@@ -63,146 +194,85 @@ sudo bash ./install-device-access.sh
 ./run.sh
 ```
 
-Run **device-access setup once**. It grants the local user access to this specific
-USB HID device and `/dev/uinput`, which allows mapped keyboard and wheel output.
-It writes `/etc/udev/rules.d/70-speededitor.rules`, loads uinput, and applies access
-to the connected device. It does not grant raw access to other keyboards or add
-you to the input group. Reconnect the USB cable if access is not available yet.
-Run the app itself as your normal user.
+Device-access setup runs once. It installs
+`/etc/udev/rules.d/70-speededitor.rules` and grants the active local user access
+to this USB HID device and `/dev/uinput`. Reconnect USB if needed; run the app
+itself as your normal user. To undo setup, remove that rule, reload udev rules
+and reboot.
 
-To undo that setup, remove `/etc/udev/rules.d/70-speededitor.rules`, reload udev
-rules, and reboot. Rebooting also clears the temporary device access entries.
+The **combined native Resolve wheel plus custom buttons mode is currently
+Windows-only**. A future Linux port needs Linux equivalents of the HID-read
+routing and foreground-process checks, integration with the existing uinput
+output, and testing in a real Linux Resolve session. It is not enabled by merely
+installing Frida on Linux. The current backend stops desktop mapping when it
+detects Resolve, allowing normal native Resolve operation without custom remaps.
 
-## Using the editor
+## Troubleshooting
 
-The app starts with **shortcut output disabled**. Battery status updates
-automatically; you do not need to start mapping to see it.
+- **USB connected, interface busy/restricted:** Resolve can hold the interface
+  exclusively. This is expected when using the Windows native-wheel adapter.
+  Desktop mapping requires Resolve to be closed.
+- **`doctor` returns exit code 1 while Resolve is open:** its standalone USB
+  access check can fail because Resolve owns the device. That does not by itself
+  mean the runtime adapter cannot connect.
+- **A button still behaves natively:** confirm that it is set to Shortcut,
+  saved, and mapping is active. Give Resolve focus and move the wheel briefly.
+- **Attachment fails:** check that one Resolve instance is running and another
+  SpeedEditor adapter is not already connected. Stop/reconnect after a Resolve
+  restart or device reconnection.
+- **Shortcuts do not arrive:** verify the shortcut in Resolve's current keyboard
+  layout. Windows can block input delivery to a process running with higher
+  privileges; normally run both applications without elevation.
+- **Battery unavailable while Resolve runs:** Windows defers battery queries
+  while Resolve owns the controller. It does not display a stale percentage.
 
-1. Select a profile.
-2. Select a button in **Button Assignments**.
-3. Enter a shortcut such as `Ctrl+C`, `Alt+Tab`, `Space`, or `PlayPause`.
-4. Choose **Apply & save**. Leave an assignment blank to send nothing.
-5. Use **Monitor only** to inspect physical controls without sending shortcuts.
-6. Choose **Start mapping** to send shortcuts to the focused application; choose
-   **Stop** to release the mapping connection.
+The runtime adapter temporarily hooks Resolve's input path. It does not patch
+the application on disk, install a USB filter driver or change device firmware.
+A short lease restores native button handling if the adapter host stops
+responding. This remains experimental software tied to the observed input path;
+other Resolve builds, pages and button/shortcut combinations need more testing.
 
-Use **Save as…** to make another profile, or **Open…** to load one. Button actions
-tap once per press. Hold-to-repeat, held modifiers, arbitrary commands, and
-automatic application-specific profile selection are not implemented.
+## Verification and development
 
-Shortcuts assume a US-style keyboard layout. `Plus` refers to the physical
-equals/plus key; use `Ctrl+Shift+Equal` to explicitly include Shift.
+The Windows GUI live check confirmed **CAM9 → Space** alongside normal native
+JOG/SCRL/SHTL. Other remaps and standalone Windows desktop delivery have not all
+been verified. Detailed results and limitations are in
+[VERIFICATION.md](VERIFICATION.md).
 
-### Wheel behavior
+The **61-test suite** passes on Windows and Ubuntu WSL with platform-specific
+skips. Windows GUI behavior checks run with hidden windows; Linux rendering
+checks use Xvfb at normal and high DPI. Node.js is optional for the JavaScript
+adapter tests; it is not needed to run the GUI.
 
-Press the physical JOG, SCRL, or SHTL button to select a wheel map. Those buttons
-still select their modes when their shortcut assignments are blank.
+Windows:
 
-| Mode | Standard behavior | Default threshold |
-| --- | --- | --- |
-| JOG | Pause and step one frame back / forward per movement unit | 360 |
-| SCRL | Pause and step ten frames back / forward per movement unit | 360 |
-| SHTL | Set a latched reverse / forward playback level | 2160 |
+```powershell
+.\.venv-win\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv-win\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv-win\Scripts\python.exe tests/gui_smoke.py --headless
+.\.venv-win\Scripts\python.exe tests/gui_smoke.py --headless --high-dpi
+.\SpeedEditor.cmd doctor
+.\SpeedEditor.cmd monitor --native-resolve --profile profiles/resolve-native.json --seconds 30
+```
 
-The threshold is wheel movement per step (or shuttle level): lower values are
-more sensitive. Both built-in profiles default to **Standard** transport.
-Select **Custom** for any mode to enable its left/right shortcut fields, then
-save the wheel settings. Older imported profiles without a behavior field keep
-their existing shortcut behavior.
-
-Standard transport targets a focused video editor with J/K/L and arrow-key
-playback controls. JOG and SCRL send K to pause, then step backward or forward;
-they do not keep generating actions when wheel reports stop. SCRL has a 10×
-gear ratio compared with JOG for the same threshold. Very large motion reports
-are bounded to avoid flooding the target application.
-
-SHTL integrates wheel movement from the point where shuttle mode was selected.
-Turning farther from that point selects one of four speed levels; it sends K
-followed by J or L taps only when the selected level changes. Playback continues
-when the wheel is stationary. Turn back to neutral, press STOP/PLAY, change
-modes, or stop the mapper to stop shuttle playback. Pressing SHTL again stops
-and recenters it. Speed multipliers depend on the target editor's key bindings;
-the app does not promise an exact 3× or 4× rate. STOP/PLAY defaults to Space.
-
-This is **keyboard transport emulation, not native Resolve integration**. The
-target editor must have focus and support these shortcuts. Generic desktop apps
-do not interpret the keys as video commands. Fairlight reel-rocking, automatic
-Cut-page waveform zoom, live trimming, and other context-aware dial operations
-still require native integration. App-level playback of these new defaults has
-not yet been verified.
-
-### Battery status
-
-The app reads the controller's battery percentage and charging flag immediately
-on startup and every five seconds afterward. It does not need to authenticate the
-mapping session or change wheel LEDs to query the battery. Incoming battery
-reports also update the display during monitoring or mapping.
-
-The label shows the percentage plus **Charging** or **Not charging**. When a read
-cannot be completed, it shows a disconnected, access-required, or unavailable
-state instead of keeping a stale percentage.
-
-## DaVinci Resolve support and limitations
-
-**Custom mapping and native Resolve control are separate modes.**
-
-For normal Resolve editing, choose **Use native Resolve** before opening Resolve.
-This stops the mapper and releases its mapping connection, so Resolve can control
-the buttons and wheel through its native integration. The passive battery query
-continues. Native Resolve operation still needs a live test on the target setup.
-
-The app detects a process named `resolve` and stops custom mapping to avoid
-competing for the controller. **Custom button mappings together with native
-Resolve wheel control are not implemented.**
-
-The included **Resolve shortcuts** profile is an **unverified starter preset**.
-It is available to edit and export for future integration, but custom mapping is
-inactive while native Resolve runs. Some native operations have no direct
-keyboard equivalent and are blank. CAM1–9 send plain digits, not verified
-multicam commands. Its Standard wheel behavior uses the keyboard transport
-described above. Simultaneous custom buttons and native Resolve wheel behavior
-still need a separate routing/integration solution; changing transport defaults
-does not remove that limitation.
-
-## Verification
-
-On October 26, 2026, a USB-connected unit authenticated successfully. Live testing
-confirmed STOP/PLAY (`0x3c`), CAM1 (`0x33`), JOG (`0x1d`), key releases, and wheel
-movement in both directions. Wheel readings arrived in multiples of 360, and
-sensitivity defaults were adjusted using those readings.
-
-Automatic battery reads were verified with mapping stopped, including a live
-**4% / Charging** report. The screenshot above was taken later and shows a
-separate reading. Virtual keyboard/scroll-device creation was also verified
-without sending test shortcuts.
-
-**37 automated tests** and the GUI smoke test pass. The editor is checked at
-normal and high display scaling. The remaining 40 physical buttons, end-to-end
-shortcut delivery into target applications, and native Resolve behavior have
-not been verified on this setup. See [VERIFICATION.md](VERIFICATION.md).
-
-## Diagnostics and development
+Linux, with Xvfb and xauth installed:
 
 ```sh
-./run.sh doctor
-./run.sh monitor --seconds 30
-./run.sh map --profile profiles/desktop.json
+.venv/bin/python -m pip install -r requirements-dev.txt
 .venv/bin/python -m unittest discover -s tests -v
 xvfb-run -a .venv/bin/python tests/gui_smoke.py
 xvfb-run -a .venv/bin/python tests/gui_smoke.py --high-dpi
 ```
 
-GUI smoke tests also require Xvfb, xauth, and ImageMagick's `import` utility.
-Generated screenshots and monitor logs are stored in the ignored `artifacts/`
-folder. On disconnect, the mapper stops and closes its virtual keyboard.
-Reconnect the controller and start monitoring or mapping again.
+Generated screenshots, local captures and logs stay in the ignored `artifacts/`
+directory. Published measurement summaries are in `docs/`. Development notes:
+[Windows port](docs/WINDOWS_PORT.md) and
+[Resolve adapter](docs/RESOLVE_ADAPTER.md).
 
-## Protocol attribution
+## Attribution
 
-USB support uses the standard Linux hidraw API and Sylvain Munaut's published
-Speed Editor authentication algorithm. Authentication is renewed before the
-reported timeout. The app does not change controller firmware.
+USB authentication uses Sylvain Munaut's published Speed Editor protocol code.
+Its original sources, Apache-2.0 license and notices are retained in
+[third_party/](third_party/NOTICE.md).
 
-Original protocol code, its Apache-2.0 license, and attribution are included in
-[third_party/](third_party/NOTICE.md). The independent project is not affiliated
-with Blackmagic Design.
+This independent project is not affiliated with or endorsed by Blackmagic Design.

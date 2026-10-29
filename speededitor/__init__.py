@@ -1,1 +1,1 @@
-"""SpeedEditor: Linux USB controller mapper."""
+"""SpeedEditor: USB desktop mapping and Windows Resolve native-wheel routing."""

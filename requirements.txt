@@ -1,1 +1,3 @@
-evdev==2.0.0
+evdev==2.0.0; sys_platform == 'linux'
+hidapi==0.14.0.post4; sys_platform == 'win32'
+frida==17.23.2; sys_platform == 'win32'

@@ -1,7 +1,8 @@
 """Read battery feature reports without authenticating or enabling mappings."""
 import threading
+import os
 
-from .device import Device, discover
+from .device import Device, discover, resolve_running
 
 
 class BatteryMonitor:
@@ -25,13 +26,15 @@ class BatteryMonitor:
     def check(self):
         device = None
         try:
+            if os.name == 'nt' and resolve_running():
+                return 'battery_unavailable', 'Battery: unavailable while Resolve owns controller'
             devices = discover()
             if not devices:
                 return 'battery_unavailable', 'Battery: disconnected'
             if len(devices) > 1:
                 return 'battery_unavailable', 'Battery: multiple devices connected'
             if not devices[0]['accessible']:
-                return 'battery_unavailable', 'Battery: device access required'
+                return 'battery_unavailable', 'Battery: interface busy or access required'
             device = Device(devices[0]['path'])
             return 'battery', device.battery_status()
         except (OSError, ValueError):

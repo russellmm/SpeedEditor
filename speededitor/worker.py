@@ -19,13 +19,13 @@ class Worker:
     def running(self):
         return self.thread is not None and self.thread.is_alive()
 
-    def start(self, profile, active=False):
+    def start(self, profile, active=False, native_resolve=False):
         if self.running:
             raise RuntimeError('Stop the current session first')
         self.stop_event.clear()
         while not self.commands.empty():
             self.commands.get_nowait()
-        self.thread = threading.Thread(target=self.run, args=(deepcopy(profile), active), daemon=True)
+        self.thread = threading.Thread(target=self.run, args=(deepcopy(profile), active, native_resolve), daemon=True)
         self.thread.start()
 
     def update(self, profile):
@@ -34,7 +34,11 @@ class Worker:
     def stop(self):
         self.stop_event.set()
 
-    def run(self, profile, active):
+    def run(self, profile, active, native_resolve=False):
+        if native_resolve:
+            from .resolve_bridge import ResolveBridge
+            ResolveBridge(self.events, self.commands, self.stop_event).run(profile, active)
+            return
         device = output = mapper = None
         try:
             if resolve_running():
@@ -45,7 +49,8 @@ class Worker:
             if len(devices) > 1:
                 raise RuntimeError('Multiple Speed Editors found. Connect only one for this version.')
             if not devices[0]['accessible']:
-                raise PermissionError('Device access is restricted. Run the device-access setup once.')
+                raise PermissionError(devices[0].get('reason') or
+                                      'Device access is restricted. Run the device-access setup once.')
             device = Device(devices[0]['path'])
             delay = device.authenticate()
             device.relative_wheel()

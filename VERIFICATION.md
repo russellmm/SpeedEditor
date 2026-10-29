@@ -17,3 +17,57 @@
 - New keyboard transport defaults have not been verified inside a video editor.
 - Untested: remaining 40 physical buttons; delivery into target applications; native Resolve.
 - Not implemented: custom remapping while native Resolve owns the controller.
+
+# Windows and native wheel verification — October 28, 2026
+
+- Windows 11 port implements HIDAPI access, busy-interface discovery, SendInput
+  output, Resolve.exe detection, launch scripts and DPI-aware Tk UI.
+- Windows unit suite: 49 run, 48 passed, one Linux-specific test skipped.
+- Ubuntu WSL suite: 49 run, 43 passed, six Windows-specific tests skipped.
+- GUI smoke checks: normal/high DPI passed on both platforms. Subsequent Windows
+  checks use `--headless`; Linux screenshot rendering uses Xvfb. Pillow replaces
+  the previous ImageMagick screenshot dependency.
+- Resolve retained the controller throughout native tests. Tracing is detached.
+- Cut page / Source Tape active: native JOG and SCRL configure hardware mode 2;
+  SHTL configures mode 3. Incoming wheel buffers have 13 bytes with zero padding.
+- JOG user-marked turns: +1,474,715 clockwise and −1,466,767 counterclockwise.
+- SCRL clockwise turn including overshoot correction: net +1,468,558.
+- The user confirmed stationary-wheel SHTL playback continued at 0.25× forward.
+- Further SHTL samples cover forward/reverse 0.25× through 64×, including held
+  endpoints +4096/−4096. Rates are manually reported plateau samples, not exact
+  transition thresholds; some intermediate reverse rates remain unsampled.
+- Re-pressing an already-selected SHTL stops playback while retaining neutral;
+  the user confirmed switching through JOG/SCRL and returning to SHTL sets a new
+  neutral. See [sampled shuttle curve and origin behavior](docs/SHUTTLE_CURVE.md).
+- Captured a native battery input report of 100%, not charging; this does not
+  verify the app's own standalone Windows battery query.
+- Keyboard/scroll output was mocked; no mapped shortcuts were sent to the desktop.
+- Remaining: standalone Windows authentication, battery and shortcut delivery
+  with Resolve stopped; precise speed thresholds and frame-displacement measurements;
+  remaining 38 physical buttons; custom mappings inside native Resolve.
+
+See [native evidence and limitations](docs/NATIVE_WHEEL.md) and
+[Windows port status](docs/WINDOWS_PORT.md).
+
+# Experimental Resolve adapter — October 28, 2026
+
+- Added the Resolve native wheel control mode, per-button Native / Shortcut /
+  Disabled settings, a separate `resolve_buttons` profile field, and an all-native
+  starter profile. Desktop settings and legacy profiles are preserved.
+- Production monitor attached to Resolve 21.1.0.14, received 240 wheel updates
+  and eight key reports, then detached. The user confirmed normal native JOG,
+  SCRL and SHTL behavior while it was connected.
+- Actual Windows Frida runtime loaded the production script with real-device
+  mapping disabled; synthetic reports verified button replacement, reserved JOG
+  pass-through and unchanged wheel bytes. No shortcut output was enabled.
+- Current Windows suite: 61 tests, 60 passed and one Linux-only test skipped.
+- Current Ubuntu WSL suite: 61 tests, 53 passed and eight Windows/Node tests skipped.
+- Hidden Windows and rendered Xvfb GUI checks pass at normal/high DPI, including
+  separate native-button editing, protected wheel modes and auto-selected profile.
+- User-started GUI live check passed: CAM9 → Space toggled play/pause while JOG,
+  SCRL and SHTL continued natively. The ignored test profile is
+  `artifacts/resolve-native-live-check.json`. Other remaps/pages remain unverified.
+- Native wheel control is preserved by passing its reports to Resolve; the
+  sampled speed curve is not used to emulate native transport in this mode.
+
+See [Resolve adapter setup and limits](docs/RESOLVE_ADAPTER.md).

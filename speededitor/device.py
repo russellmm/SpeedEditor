@@ -1,14 +1,19 @@
-"""Linux hidraw transport. No firmware changes or USB interface detachment."""
-import fcntl
+"""USB HID transport. No firmware changes or USB interface detachment."""
 import os
 from pathlib import Path
 import select
 import struct
 
+if os.name != 'nt':
+    import fcntl
+
 from .bmd_protocol import bmd_kbd_auth
 
 
 def discover():
+    if os.name == 'nt':
+        from .windows_hid import discover as windows_discover
+        return windows_discover()
     devices = []
     for item in sorted(Path('/sys/class/hidraw').glob('hidraw*')):
         info = dict(line.split('=', 1) for line in
@@ -21,6 +26,9 @@ def discover():
 
 
 def resolve_running():
+    if os.name == 'nt':
+        from .windows_hid import resolve_running as windows_resolve_running
+        return windows_resolve_running()
     for process in Path('/proc').glob('[0-9]*/comm'):
         try:
             if process.read_text().strip().lower() == 'resolve':
@@ -30,7 +38,7 @@ def resolve_running():
     return False
 
 
-class Device:
+class LinuxDevice:
     def __init__(self, path):
         self.fd = os.open(path, os.O_RDWR | os.O_NONBLOCK)
 
@@ -100,6 +108,11 @@ class Device:
 def parse_report(data):
     if not data:
         return None
+    # Windows HID input buffers use the collection's maximum report size.
+    # Keep the protocol payload and accept only zero padding after it.
+    expected = {3: 7, 4: 13, 7: 3}.get(data[0])
+    if expected and len(data) > expected and not any(data[expected:]):
+        data = data[:expected]
     if data[0] == 4 and len(data) == 13:
         return 'keys', {k for k in struct.unpack('<6H', data[1:]) if k}
     if data[0] == 3 and len(data) == 7:
@@ -107,3 +120,12 @@ def parse_report(data):
     if data[0] == 7 and len(data) == 3 and data[1] in (0, 1) and data[2] <= 100:
         return 'battery', {'charging': bool(data[1]), 'level': data[2]}
     return None
+
+
+if os.name == 'nt':
+    from .windows_hid import WindowsDevice
+
+    class Device(WindowsDevice, LinuxDevice):
+        """HIDAPI I/O with the shared protocol/authentication implementation."""
+else:
+    Device = LinuxDevice

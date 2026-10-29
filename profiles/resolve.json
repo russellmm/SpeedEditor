@@ -1,7 +1,7 @@
 {
   "version": 1,
   "name": "Resolve shortcuts (unverified)",
-  "notes": "Starter keyboard preset only. Some physical operations have no keyboard equivalent and are blank. CAM1\u20139 send digit keys; these are not verified multicam commands. Native Resolve and this mapper must not own the device simultaneously. Current implementation yields to native Resolve; custom remapping inside Resolve is not implemented.",
+  "notes": "Unverified desktop keyboard starter preset. Some native operations have no keyboard equivalent and are blank. CAM1\u20139 use digit keys, not verified multicam commands. Desktop mapping yields while Resolve runs. To remap buttons alongside the native Resolve wheel on Windows, choose the separate Resolve native wheel control mode and program explicit resolve_buttons overrides.",
   "buttons": {
     "SMART_INSRT": "F9",
     "APPND": "Shift+F12",
