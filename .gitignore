@@ -5,6 +5,12 @@ __pycache__/
 artifacts/
 .pytest_cache/
 
+# Personal mappings stay local; publish only the built-in starter profiles.
+/profiles/*.json
+!/profiles/desktop.json
+!/profiles/resolve.json
+!/profiles/resolve-native.json
+
 # Local workspace instructions and machine-specific launcher.
 /AGENTS.md
 /SpeedEditor.desktop

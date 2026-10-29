@@ -163,6 +163,8 @@ existing custom wheel behavior.
   Native; add only the overrides you want.
 
 Use **Save as…** to create a personal copy and **Open…** to load it later.
+Personal JSON profiles saved in `profiles/` are ignored by Git; the three
+built-in starter profiles remain versioned.
 Native-wheel overrides use the optional `resolve_buttons` field: omitted entries
 mean Native, a shortcut string means Shortcut, and an empty string means Disabled.
 They do not overwrite the profile's desktop button or wheel settings.
